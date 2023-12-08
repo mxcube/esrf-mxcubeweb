@@ -205,9 +205,8 @@ class Lims(ComponentBase):
                 msg = "[LIMS] Connection Error!"
                 logging.getLogger("MX3.HWR").error(msg)
                 return ERROR_CODE
-
             try:
-                HWR.beamline.lims.lims_rest.authenticate(loginID, password)
+                HWR.beamline.authenticator.authenticate(loginID, password)
             except Exception:
                 logging.getLogger("MX3.HWR").error("[LIMS-REST] Could not authenticate")
                 return ERROR_CODE
