@@ -403,9 +403,12 @@ def collect_oscillation_started(*args):
 
 
 def collect_image_taken(frame):
-    node = last_queue_node()
+    try:
+        node = last_queue_node()
+    except IndexError:
+        node = None
 
-    if not mxcube.queue.is_interleaved(node["node"]):
+    if node and not mxcube.queue.is_interleaved(node["node"]):
         progress = mxcube.queue.get_task_progress(last_queue_node()["node"], frame)
 
         msg = {
