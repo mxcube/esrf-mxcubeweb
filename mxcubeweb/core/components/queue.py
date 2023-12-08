@@ -1629,6 +1629,7 @@ class Queue(ComponentBase):
         """
         sample_model, sample_entry = self.get_entry(node_id)
         model, entry = self._create_queue_entry(task, task_name)
+        model.set_origin(ORIGIN_MX3)
 
         acq = model.acquisitions[0]
         params = task["parameters"]
@@ -1663,7 +1664,8 @@ class Queue(ComponentBase):
             )
 
         full_path, process_path = HWR.beamline.session.get_full_path(
-            params.get("subdir", ""), task_name
+            os.path.join(params.get("subdir", ""), params.get("experiment_name", "")),
+            task_name
         )
         acq.path_template.directory = full_path
         acq.path_template.process_directory = process_path
@@ -2101,6 +2103,7 @@ class Queue(ComponentBase):
         return self.app.AUTO_MOUNT_SAMPLE
 
     def get_task_progress(self, node, pdata):
+        return 0
         progress = 0
 
         if node.is_executed():
