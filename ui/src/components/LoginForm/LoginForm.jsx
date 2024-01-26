@@ -32,6 +32,10 @@ function LoginForm() {
     }
   }
 
+  function handleSingleSignOn() {
+    ssoLogIn();
+  }
+
   return (
     <Form
       className={styles.box}
@@ -43,6 +47,7 @@ function LoginForm() {
         MXCuBE
       </h1>
       <fieldset className={styles.fieldset} disabled={loading}>
+        {process.env.REACT_APP_SSO !== 'true' && [
         <Form.Group className="mb-3">
           <InputGroup>
             <InputGroup.Text>
@@ -70,7 +75,7 @@ function LoginForm() {
               </Form.Control.Feedback>
             )}
           </InputGroup>
-        </Form.Group>
+        </Form.Group>,
         <Form.Group className="mb-3">
           <InputGroup>
             <InputGroup.Text>
@@ -98,13 +103,23 @@ function LoginForm() {
             )}
           </InputGroup>
         </Form.Group>
-        <Button type="submit" size="lg" className={styles.btn}>
-          {loading && (
-            <img className={styles.loader} src={loader} width="25" alt="" />
-          )}
-          Sign in
-        </Button>
-        {!loading && showErrorPanel && (
+        ]}
+        {process.env.VITE_SSO === 'true' ? (
+          <Button onClick={handleSingleSignOn} size="lg" className={styles.btn}>
+            {loading && (
+              <img className={styles.loader} src={loader} width="25" alt="" />
+            )}
+            Sign in with SSO
+          </Button>
+        ) : (
+          <Button type="submit" size="lg" className={styles.btn}>
+            {loading && (
+              <img className={styles.loader} src={loader} width="25" alt="" />
+            )}
+            Sign in with proposal
+          </Button>
+        )}
+        {!loading && showError && (
           <Alert className="mt-3" variant="danger">
             <pre className={styles.errorMsg}>{errorMessage}</pre>
           </Alert>
