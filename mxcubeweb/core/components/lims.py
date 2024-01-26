@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import logging
-import copy
 import io
 import math
 import re
@@ -12,8 +11,6 @@ from mxcubecore.model import queue_model_objects as qmo
 
 from mxcubeweb.core.components.component_base import ComponentBase
 from mxcubeweb.core.util import fsutils
-
-from flask import session
 from flask_login import current_user
 
 
@@ -206,36 +203,36 @@ class Lims(ComponentBase):
                 logging.getLogger("MX3.HWR").error(msg)
                 return ERROR_CODE
             try:
-                HWR.beamline.authenticator.authenticate(loginID, password)
+                login_res = HWR.beamline.lims.login(
+                    loginID, password, create_session=create_session
+                )
+                # HWR.beamline.authenticator.authenticate(loginID, password)
             except Exception:
-                logging.getLogger("MX3.HWR").error("[LIMS-REST] Could not authenticate")
+                logging.getLogger("MX3.HWR").exception(
+                    "[LIMS-REST] Could not authenticate"
+                )
                 return ERROR_CODE
 
             try:
+                # TODO: to be renamed by `get_sessions_by_user`
                 proposals = HWR.beamline.lims.get_proposals_by_user(loginID)
 
                 logging.getLogger("MX3.HWR").info(
-                    "[LIMS] Retrieving proposal list for user: %s, proposals: %s"
-                    % (loginID, proposals)
+                    "[LIMS] Retrieving proposal list for user: %s, #proposals: %s"
+                    % (loginID, len(proposals))
                 )
-                session["proposal_list"] = copy.deepcopy(proposals)
             except Exception:
                 logging.getLogger("MX3.HWR").error(
                     "[LIMS] Could not retreive proposal list, %s" % sys.exc_info()[1]
                 )
                 return ERROR_CODE
 
-            for prop in session["proposal_list"]:
+            # This become sessions instead of proposals with a inner session
+            for prop in proposals:
                 todays_session = HWR.beamline.lims.get_todays_session(prop)
                 prop["Session"] = [todays_session["session"]]
 
-            if hasattr(
-                HWR.beamline.session, "commissioning_fake_proposal"
-            ) and HWR.beamline.session.is_inhouse(loginID, None):
-                dummy = HWR.beamline.session.commissioning_fake_proposal
-                session["proposal_list"].append(dummy)
-
-            login_res["proposalList"] = session["proposal_list"]
+            login_res["proposalList"] = proposals
             login_res["status"] = {
                 "code": "ok",
                 "msg": "Successful login",
@@ -254,7 +251,6 @@ class Lims(ComponentBase):
                 logging.getLogger("MX3.HWR").error("[LIMS] Could not login to LIMS")
                 return ERROR_CODE
 
-            session["proposal_list"] = [proposal]
             login_res["proposalList"] = [proposal]
 
             logging.getLogger("MX3.HWR").info(
@@ -268,11 +264,9 @@ class Lims(ComponentBase):
         return login_res
 
     def create_lims_session(self, login_res):
-        for prop in session["proposal_list"]:
+        for prop in login_res["proposalList"]:
             todays_session = HWR.beamline.lims.get_todays_session(prop)
             prop["Session"] = [todays_session["session"]]
-
-        login_res["proposalList"] = session["proposal_list"]
 
         return login_res
 
@@ -281,27 +275,36 @@ class Lims(ComponentBase):
         Search for the given proposal in the proposal list.
         """
         limsdata = json.loads(current_user.limsdata)
-
         for prop in limsdata.get("proposalList", []):
             _p = "%s%s" % (
                 prop.get("Proposal").get("code", "").lower(),
                 prop.get("Proposal").get("number", ""),
             )
 
-            if _p == proposal.lower():
+            if _p.lower() == proposal.lower():
                 return prop
 
         return {}
 
     def get_proposal(self, user):
         limsdata = json.loads(user.limsdata)
-
         proposal = "%s%s" % (
             limsdata.get("Proposal").get("code", "").lower(),
             limsdata.get("Proposal").get("number", ""),
         )
-
         return proposal
+
+    def is_rescheduled_session(self, session):
+        """
+        Returns true is the session is rescheduled. That means that either currently is not the expected timeslot
+        or because it is not in the expected beamline
+        """
+        is_scheduled_beamline = session.get("isScheduledBeamline", True)
+        is_scheduled_time = session.get("isScheduledTime", True)
+        return not (is_scheduled_beamline and is_scheduled_time)
+
+    def allow_session(self, session):
+        HWR.beamline.lims.allow_session(session)
 
     def select_proposal(self, proposal):
         proposal_info = self.get_proposal_info(proposal)
@@ -339,7 +342,11 @@ class Lims(ComponentBase):
                 todays_session.get("session").get("startDate")
             )
 
-            session["proposal"] = proposal_info
+            if self.is_rescheduled_session(proposal_info["Session"][0]):
+                logging.getLogger("MX3.HWR").info(
+                    "[LIMS] Session is rescheduled in time or beamline."
+                )
+                self.allow_session(proposal_info["Session"][0])
 
             if hasattr(HWR.beamline.session, "prepare_directories"):
                 try:
