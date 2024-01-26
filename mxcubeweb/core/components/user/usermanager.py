@@ -2,10 +2,14 @@ import logging
 import json
 import uuid
 import datetime
+import requests
 
 import flask
 import flask_security
 from flask_login import current_user
+
+# from authlib.oauth2.rfc6749 import OAuth2Token
+from authlib.integrations.flask_client import OAuth
 
 from mxcubeweb.core.components.component_base import ComponentBase
 from mxcubeweb.core.models.usermodels import User
@@ -18,6 +22,24 @@ from mxcubecore import HardwareRepository as HWR
 class BaseUserManager(ComponentBase):
     def __init__(self, app, config):
         super().__init__(app, config)
+
+        self.oauth_client = OAuth(app=app.server.flask)
+        self.oauth_issuer = "https://websso.esrf.fr/realms/ESRF/"
+        self.oauth_logout_url = "https://websso.esrf.fr/auth/realms/ESRF/protocol/openid-connect/logout"
+        self.oauth_client_secret = "95nOugpRxwF3ttXxYnXFiK6bou5wtSP1"
+        self.oauth_client_id = "mxcube"
+        self.oauth_client.register(
+            name="keycloak",
+            client_id=self.oauth_client_id,
+            client_secret=self.oauth_client_secret,
+            server_metadata_url=(
+                "https://websso.esrf.fr/realms/ESRF/.well-known/openid-configuration"
+            ),
+            client_kwargs={
+                "scope": "openid email profile",
+                "code_challenge_method": "S256",  # enable PKCE
+            },
+        )
 
     def get_observers(self):
         return [
@@ -134,7 +156,18 @@ class BaseUserManager(ComponentBase):
     def _login(self, login_id, password):
         pass
 
-    def login(self, login_id: str, password: str):
+    def sso_validate(self) -> str:
+        try:
+            token_response = self.oauth_client.keycloak.authorize_access_token()
+
+            username = token_response["userinfo"]["preferred_username"]
+            token = token_response["access_token"]
+        except Exception as ex:
+            raise
+        else:
+            self.login(username, token, sso_data=token_response)
+
+    def login(self, login_id: str, password: str, sso_data: dict = {}):
         try:
             login_res = self._login(login_id, password)
         except Exception:
@@ -146,7 +179,8 @@ class BaseUserManager(ComponentBase):
             # Making sure that the session of any in active users are invalideted
             # before calling login
             self.update_active_users()
-            user = self.db_create_user(login_id, password, login_res)
+
+            user = self.db_create_user(login_id, password, login_res, sso_data)
             self.app.server.user_datastore.activate_user(user)
             flask_security.login_user(user, remember=False)
 
@@ -213,17 +247,10 @@ class BaseUserManager(ComponentBase):
             login_info = convert_to_dict(json.loads(current_user.limsdata))
 
             self.update_operator()
-
-            proposal_list = [
-                {
-                    "code": prop["Proposal"]["code"],
-                    "number": prop["Proposal"]["number"],
-                    "proposalId": prop["Proposal"]["proposalId"],
-                    "title": prop["Proposal"]["title"],
-                    "person": prop["Person"].get("familyName", ""),
-                }
-                for prop in login_info.get("proposalList", [])
-            ]
+            proposal_list = []
+            for prop in login_info.get("proposalList", []):
+                session = prop["Session"][0]
+                proposal_list.append(session)
 
             res = {
                 "synchrotronName": HWR.beamline.session.synchrotron_name,
@@ -265,7 +292,7 @@ class BaseUserManager(ComponentBase):
 
         return list(roles)
 
-    def db_create_user(self, user: str, password: str, lims_data: dict):
+    def db_create_user(self, user: str, password: str, lims_data: dict, sso_data: dict):
         sid = flask.session["sid"]
         user_datastore = self.app.server.user_datastore
         username = f"{user}-{str(uuid.uuid4())}"
@@ -289,15 +316,17 @@ class BaseUserManager(ComponentBase):
 
             user_datastore.create_user(
                 username=username,
-                password=flask_security.hash_password("password"),
+                password="",
                 nickname=user,
                 session_id=sid,
                 selected_proposal=selected_proposal,
                 limsdata=json.dumps(lims_data),
+                refresh_token=sso_data.get("refresh_token", str(uuid.uuid4())),
                 roles=self._get_configured_roles(user),
             )
         else:
             _u.limsdata = json.dumps(lims_data)
+            _u.refresh_token=sso_data.get("refresh_token", "")
             user_datastore.append_roles(_u, self._get_configured_roles(user))
 
         self.app.server.user_datastore.commit()
@@ -400,6 +429,23 @@ class UserManager(BaseUserManager):
             raise Exception(str(info))
 
         return login_res
+
+    def _signout(self):
+        res = requests.post(
+            self.oauth_logout_url,
+            data={
+                "client_id": self.oauth_client_id,
+                "client_secret": self.oauth_client_secret,
+                "refresh_token": current_user.refresh_token,
+            },
+        )
+
+class SSOUserManager(BaseUserManager):
+    def __init__(self, app, config):
+        super().__init__(app, config)
+
+    def _login(self, login_id: str, password: str, sso: bool):
+        return {"status": {"code": "ok", "msg": ""}}
 
     def _signout(self):
         pass
