@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { logIn } from '../actions/login';
+import { logIn, ssoLogIn } from '../actions/login';
 import { setLoading } from '../actions/general';
 import Login from '../components/Login/Login';
 
@@ -28,6 +28,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     logIn: bindActionCreators(logIn, dispatch),
+    ssoLogIn: bindActionCreators(ssoLogIn, dispatch),
     setLoading: bindActionCreators(setLoading, dispatch),
   };
 }
