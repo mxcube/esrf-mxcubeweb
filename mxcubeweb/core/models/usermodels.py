@@ -74,6 +74,7 @@ class User(Base, UserMixin):
     current_limssession = Column(JSON, unique=False)
     limsdata = Column(JSON, unique=False)
     last_request_timestamp = Column(DateTime())
+    refresh_token = Column(String(255), unique=True)
     roles = relationship(
         "Role",
         secondary="roles_users",

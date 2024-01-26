@@ -1,16 +1,28 @@
 ---
 
 server:
-  SECRET_KEY: "ASECRETKEY"
-  SECURITY_PASSWORD_SALT: "ASALT"
+  SECRET_KEY: ASECRETKEY
+  SECURITY_PASSWORD_SALT: ASALT
   PERMANENT_SESSION_LIFETIME: 60
+  CERT: NONE
 
   DEBUG: false
 
   ALLOWED_CORS_ORIGINS:
-    - "http://localhost:8081"
-    - "http://localhost:5173"
-    - "ws://localhost:8000"
+    - http://localhost:8081
+    - http://localhost:5173
+    - ws://localhost:8000
+    - https://laposcarsson.esrf.fr:8081/
+    - http://lalex.esrf.fr:8081
+    - http://lalex.esrf.fr:3000
+
+sso:
+  ISSUER: https://websso.esrf.fr/realms/ESRF/
+  LOGOUT_URI: https://websso.esrf.fr/auth/realms/ESRF/protocol/openid-connect/logout
+  CLIENT_SECRET: 95nOugpRxwF3ttXxYnXFiK6bou5wtSP1
+  CLIENT_ID: mxcube
+  SCOPE: openid email profile
+  CODE_CHALLANGE_METHOD: S256
 
 mxcube:
   USE_EXTERNAL_STREAMER: true
