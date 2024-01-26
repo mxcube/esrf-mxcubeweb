@@ -27,6 +27,19 @@ class FlaskConfigModel(BaseModel):
     )
 
 
+class SSOConfigModel(BaseModel):
+    ISSUER: str = Field("", description="OpenIDConnect / OAuth Issuer URI")
+    LOGOUT_URI: str = Field("", description="OpenIDConnect / OAuth logout URI")
+    CLIENT_SECRET: str = Field("", description="OpenIDConnect / OAuth client secret")
+    CLIENT_ID: str = Field("", description="OpenIDConnect / OAuth  client id")
+    SCOPE: str = Field(
+        "openid email profile", description="OpenIDConnect / OAuth scope"
+    )
+    CODE_CHALLANGE_METHOD: str = Field(
+        "S256", description="OpenIDConnect / OAuth Challange"
+    )
+
+
 class UIComponentModel(BaseModel):
     label: str
     attribute: str
@@ -126,3 +139,4 @@ class MXCUBEAppConfigModel(BaseModel):
 class AppConfigModel(BaseModel):
     server: FlaskConfigModel
     mxcube: MXCUBEAppConfigModel
+    sso: SSOConfigModel
