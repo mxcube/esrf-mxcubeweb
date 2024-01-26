@@ -2,6 +2,7 @@ server:
   SECRET_KEY: "ASECRETKEY"
   SECURITY_PASSWORD_SALT: "ASALT"
   PERMANENT_SESSION_LIFETIME: 60
+  CERT: NONE
 
   DEBUG: False
 
@@ -9,6 +10,9 @@ server:
     - "http://localhost:8081"
     - "http://localhost:3000"
     - "ws://localhost:8000"
+    - https://laposcarsson.esrf.fr:8081/
+    - http://lalex.esrf.fr:8081
+    - http://lalex.esrf.fr:3000
 
 mxcube:
   USE_EXTERNAL_STREAMER: True
