@@ -1,8 +1,10 @@
 import logging
 
-from flask import Blueprint, request, jsonify, make_response, session
+from flask import Blueprint, request, jsonify, make_response, session, redirect, url_for
 from mxcubeweb.core.util import networkutils
 from flask_login import current_user
+
+from mxcubecore import HardwareRepository as HWR
 
 
 def init_route(app, server, url_prefix):
@@ -45,6 +47,23 @@ def init_route(app, server, url_prefix):
             res = make_response(jsonify({"msg": ""}), 200)
 
         return res
+
+    @bp.route("/ssologin", methods=["GET"])
+    def ssosingin():
+        redirect_uri = url_for("login.auth", _external=True)
+        response = app.usermanager.oauth_client.keycloak.authorize_redirect(
+            redirect_uri
+        )
+        return response
+
+    @bp.route("/auth", methods=["GET"])
+    def auth():
+        try:
+            app.usermanager.sso_validate()
+        except:
+            return redirect("/login")
+        else:
+            return redirect("/datacollection")
 
     @bp.route("/signout")
     @server.restrict
