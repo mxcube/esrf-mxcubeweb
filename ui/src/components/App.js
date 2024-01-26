@@ -8,7 +8,6 @@ import {
   Navigate,
 } from 'react-router-dom';
 
-import LoginContainer from '../containers/LoginContainer';
 import SampleViewContainer from '../containers/SampleViewContainer';
 import SampleListViewContainer from '../containers/SampleListViewContainer';
 import EquipmentContainer from '../containers/EquipmentContainer';
@@ -17,6 +16,7 @@ import RemoteAccessContainer from '../containers/RemoteAccessContainer';
 import HelpContainer from '../containers/HelpContainer';
 import Main from './Main';
 import LoadingScreen from '../components/LoadingScreen/LoadingScreen';
+import LoginContainer from '../containers/LoginContainer';
 
 import { serverIO } from '../serverIO';
 import { getLoginInfo } from '../actions/login';
@@ -29,7 +29,7 @@ function PrivateOutlet() {
   return loggedIn ? (
     <Outlet />
   ) : (
-    <Navigate to="/login" state={{ from: location }} replace />
+    <Navigate to="/login" state={{ from: location }} />
   );
 }
 
