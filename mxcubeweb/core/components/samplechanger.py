@@ -192,9 +192,7 @@ class SampleChanger(ComponentBase):
 
         sc = HWR.beamline.sample_changer
 
-        mount_from_harvester = self.app.harvester.mount_from_harvester()
-
-        res = None
+        res = False
 
         try:
             signals.sc_load(sample["location"])
@@ -409,7 +407,6 @@ class SampleChanger(ComponentBase):
         self.app.server.emit(
             "queue", {"Signal": "update", "message": "all"}, namespace="/hwr"
         )
-
 
 # Disabling C901 function is too complex (19)
 def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noqa: C901
