@@ -48,7 +48,7 @@ class SampleQueueContainer extends React.Component {
   render() {
     const {
       checked,
-      current,
+      currentSampleID,
       sampleOrder,
       queue,
       sampleList,
@@ -72,7 +72,7 @@ class SampleQueueContainer extends React.Component {
       if (queue.includes(key)) {
         const sample = sampleList[key];
 
-        if (sample.sampleID !== current.sampleID && sample.checked) {
+        if (sample.sampleID !== currentSampleID && sample.checked) {
           todo.push(sample.sampleID);
         }
       }
@@ -81,8 +81,8 @@ class SampleQueueContainer extends React.Component {
     let sampleName = '';
     let proteinAcronym = '';
 
-    if (current.sampleID) {
-      const sampleData = sampleList[current.sampleID] || {};
+    if (currentSampleID) {
+      const sampleData = sampleList[currentSampleID] || {};
       sampleName = sampleData.sampleName || '';
       proteinAcronym = sampleData.proteinAcronym
         ? `${sampleData.proteinAcronym} -`
@@ -106,7 +106,7 @@ class SampleQueueContainer extends React.Component {
           autoMountNext={autoMountNext}
           setAutoAddDiffPlan={this.props.setAutoAddDiffPlan}
           autoAddDiffPlan={autoAddDiffPlan}
-          mounted={current.sampleID}
+          mounted={currentSampleID}
           runSample={this.props.sendRunSample}
           sendSetCentringMethod={this.props.sendSetCentringMethod}
           centringMethod={centringMethod}
@@ -126,7 +126,7 @@ class SampleQueueContainer extends React.Component {
             <Nav.Item>
               <Nav.Link eventKey="current">
                 <b>
-                  {current.sampleID
+                  {currentSampleID
                     ? `Sample: ${proteinAcronym} ${sampleName}`
                     : 'Current'}
                 </b>
@@ -146,7 +146,7 @@ class SampleQueueContainer extends React.Component {
           <CurrentTree
             changeOrder={this.props.changeTaskOrderAction}
             show={visibleList === 'current'}
-            mounted={current.sampleID}
+            mounted={currentSampleID}
             queue={queue}
             sampleList={sampleList}
             toggleCheckBox={this.props.sendToggleCheckBox}
@@ -206,7 +206,7 @@ class SampleQueueContainer extends React.Component {
 function mapStateToProps(state) {
   return {
     searchString: state.queueGUI.searchString,
-    current: state.queue.current,
+    currentSampleID: state.queue.currentSampleID,
     visibleList: state.queueGUI.visibleList,
     queueStatus: state.queue.queueStatus,
     queue: state.queue.queue,
