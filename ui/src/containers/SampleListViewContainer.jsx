@@ -314,7 +314,7 @@ class SampleListViewContainer extends React.Component {
     } else {
       this.props.syncSamples();
     }
-    this.sampleGridFilterByKey("limsSamples", true);
+    this.sampleGridFilterByKey('limsSamples', true);
   }
 
   /**
@@ -455,7 +455,7 @@ class SampleListViewContainer extends React.Component {
   }
 
   sampleGridFilterByKey(key, value) {
-    this.props.filter({[key] : value});
+    this.props.filter({ [key]: value });
   }
 
   /**
@@ -522,7 +522,7 @@ class SampleListViewContainer extends React.Component {
     for (const sampleID of sampleIDList) {
       if (this.inQueue(sampleID)) {
         // Do not remove currently mounted sample
-        if (this.props.queue.current.sampleID !== sampleID) {
+        if (this.props.queue.currentSampleID !== sampleID) {
           samplesToRemove.push(sampleID);
         }
       } else {
