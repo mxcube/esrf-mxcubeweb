@@ -183,7 +183,7 @@ class SampleChanger(ComponentBase):
 
         sc = HWR.beamline.sample_changer
 
-        res = None
+        res = False
 
         try:
             signals.sc_load(sample["location"])
@@ -395,7 +395,6 @@ class SampleChanger(ComponentBase):
             "queue", {"Signal": "update", "message": "all"}, namespace="/hwr"
         )
 
-
 # Disabling C901 function is too complex (19)
 def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noqa: C901
     from mxcubeweb.routes import signals
@@ -448,13 +447,7 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
                 "Sample loading res: %s" % str(res)
             )
 
-            # We need to investigte if the comment below is still valid
-            if not res == False:  # noqa: E712
-                # WARNING: explicit test of False return value.
-                # This is to preserve backward compatibility (load_sample was
-                # supposed to return None); if sample could not be loaded, but
-                # no exception is raised, let's skip the sample
-
+            if not res:
                 raise queue_entry.QueueSkippEntryException(
                     "Sample changer could not load sample", ""
                 )
