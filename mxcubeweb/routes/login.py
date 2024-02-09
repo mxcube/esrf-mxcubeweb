@@ -60,7 +60,7 @@ def init_route(app, server, url_prefix):
     def auth():
         try:
             app.usermanager.sso_validate()
-        except:
+        except Exception:
             return redirect("/login")
         else:
             return redirect("/datacollection")
