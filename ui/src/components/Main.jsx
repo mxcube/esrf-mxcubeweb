@@ -34,6 +34,7 @@ import styles from './Main.module.css';
 import 'react-chat-widget/lib/styles.css';
 import './rachat.css';
 import { store } from '../store';
+import { serverIO } from '../serverIO';
 import { getInitialState } from '../actions/login';
 
 class Main extends React.Component {
@@ -46,6 +47,7 @@ class Main extends React.Component {
 
   componentDidMount() {
     if (!this.props.applicationFetched) {
+      serverIO.listen();
       store.dispatch(getInitialState());
     }
 
