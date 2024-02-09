@@ -25,7 +25,9 @@ class BaseUserManager(ComponentBase):
 
         self.oauth_client = OAuth(app=app.server.flask)
         self.oauth_issuer = "https://websso.esrf.fr/realms/ESRF/"
-        self.oauth_logout_url = "https://websso.esrf.fr/auth/realms/ESRF/protocol/openid-connect/logout"
+        self.oauth_logout_url = (
+            "https://websso.esrf.fr/auth/realms/ESRF/protocol/openid-connect/logout"
+        )
         self.oauth_client_secret = "95nOugpRxwF3ttXxYnXFiK6bou5wtSP1"
         self.oauth_client_id = "mxcube"
         self.oauth_client.register(
@@ -162,7 +164,7 @@ class BaseUserManager(ComponentBase):
 
             username = token_response["userinfo"]["preferred_username"]
             token = token_response["access_token"]
-        except Exception as ex:
+        except Exception:
             raise
         else:
             self.login(username, token, sso_data=token_response)
@@ -326,7 +328,7 @@ class BaseUserManager(ComponentBase):
             )
         else:
             _u.limsdata = json.dumps(lims_data)
-            _u.refresh_token=sso_data.get("refresh_token", "")
+            _u.refresh_token = sso_data.get("refresh_token", "")
             user_datastore.append_roles(_u, self._get_configured_roles(user))
 
         self.app.server.user_datastore.commit()
@@ -431,7 +433,7 @@ class UserManager(BaseUserManager):
         return login_res
 
     def _signout(self):
-        res = requests.post(
+        requests.post(
             self.oauth_logout_url,
             data={
                 "client_id": self.oauth_client_id,
@@ -439,6 +441,7 @@ class UserManager(BaseUserManager):
                 "refresh_token": current_user.refresh_token,
             },
         )
+
 
 class SSOUserManager(BaseUserManager):
     def __init__(self, app, config):
