@@ -1665,7 +1665,7 @@ class Queue(ComponentBase):
 
         full_path, process_path = HWR.beamline.session.get_full_path(
             os.path.join(params.get("subdir", ""), params.get("experiment_name", "")),
-            task_name
+            task_name,
         )
         acq.path_template.directory = full_path
         acq.path_template.process_directory = process_path

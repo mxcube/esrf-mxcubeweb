@@ -24,7 +24,9 @@ class HOModel(BaseModel):
 
 class HOActuatorModel(HOModel):
     value: float = Field(0, description="Value of actuator (position)")
-    limits: Tuple[Optional[float], Optional[float]] = Field((-1, -1), description="Limits (min max)")
+    limits: Tuple[Optional[float], Optional[float]] = Field(
+        (-1, -1), description="Limits (min max)"
+    )
 
 
 class NStateModel(HOActuatorModel):
