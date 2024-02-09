@@ -470,14 +470,8 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
                 "Sample loading res: %s" % str(res)
             )
 
-            # We need to investigate if the comment below is still valid
-            if not res == False:  # noqa: E712
-                # WARNING: explicit test of False return value.
-                # This is to preserve backward compatibility (load_sample was
-                # supposed to return None); if sample could not be loaded, but
-                # no exception is raised, let's skip the sample
-
-                raise queue_entry.QueueSkipEntryException(
+            if not res:
+                raise queue_entry.QueueSkippEntryException(
                     "Sample changer could not load sample", ""
                 )
 
