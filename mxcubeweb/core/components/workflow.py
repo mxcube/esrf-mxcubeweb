@@ -33,6 +33,7 @@ class Workflow(ComponentBase):
 
     def submit_parameters(self, params):
         HWR.beamline.workflow.set_values_map(params)
+        self.app.server.emit("workflowParametersDialog", {}, namespace="/hwr")
 
     def get_mesh_result(self, gid, _type="heatmap"):
         base64data = HWR.beamline.sample_view.get_grid_data(gid)
