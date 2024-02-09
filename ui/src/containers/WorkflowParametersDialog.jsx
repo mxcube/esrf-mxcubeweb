@@ -12,10 +12,10 @@ import {
 import './WorkflowParametersDialog.css';
 
 function WorkflowParametersDialog(props) {
-  const { formData, show, handleHide, workflowSubmitParameters } = props;
+  const { formData, show, handleHide, submitWorkflowParameters } = props;
 
   function submitData(values) {
-    workflowSubmitParameters(values.formData);
+    submitWorkflowParameters(values.formData);
     handleHide();
   }
 
@@ -33,7 +33,7 @@ function WorkflowParametersDialog(props) {
         <Form
           validator={validator}
           schema={formData}
-          formData={formData.initialFormData}
+          formData={formData.initialValues}
           onSubmit={submitData}
           onError={console.log('errors')} // eslint-disable-line no-console
         />
