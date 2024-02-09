@@ -55,7 +55,7 @@ class Beamline(ComponentBase):
             msg = "error connecting to beamline actions hardware object signals"
             logging.getLogger("MX3.HWR").exception(msg)
 
-        if  HWR.beamline.xrf_spectrum:
+        if HWR.beamline.xrf_spectrum:
             HWR.beamline.xrf_spectrum.connect(
                 HWR.beamline.xrf_spectrum,
                 "xrf_task_progress",

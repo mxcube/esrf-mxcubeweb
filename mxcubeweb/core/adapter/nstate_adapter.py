@@ -48,7 +48,16 @@ class NStateAdapter(ActuatorAdapterBase):
         self._ho.set_value(self._ho.VALUES[value.value])
 
     def _get_value(self) -> StrValueModel:
-        return StrValueModel(**{"value": self._ho.get_value().name})
+        # Temporary fix for Beam definer, that returns a value instead
+        # of a enum (even if AbstractNState)
+        _v = self._ho.get_value()
+
+        if isinstance(_v, int):
+            value = _v
+        else:
+            value = self._ho.get_value().name
+
+        return StrValueModel(**{"value": value})
 
     def msg(self):
         try:
