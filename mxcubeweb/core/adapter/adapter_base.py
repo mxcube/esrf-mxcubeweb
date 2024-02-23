@@ -425,7 +425,7 @@ class ActuatorAdapterBase(AdapterBase):
         try:
             data.update({"value": self.get_value(), "limits": self.limits()})
         except Exception as ex:
-            if not "kappa" in self._ho.name():
+            if "kappa" not in self._ho.name():
                 logging.getLogger("MX3.HWR").exception(
                     f"Could not get dictionary representation of {self._ho.name()}"
                 )
