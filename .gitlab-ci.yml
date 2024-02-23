@@ -18,9 +18,11 @@ stages:          # List of stages for jobs, and their order of execution
   - deploy
 
 before_script:
+  - curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+  - ./bin/micromamba shell init -s bash -p ~/micromamba 
   - python --version ; pip --version  # For debugging
-  - conda env create -f conda-environment.yml
-  - conda run --name mxcubeweb poetry install
+  - micromamba env create -f conda-environment.yml
+  - micromamba run --name mxcubeweb poetry install
  
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
