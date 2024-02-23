@@ -23,26 +23,21 @@ before_script:
   - eval "$(./bin/micromamba shell hook -s posix)"
   - python --version ; pip --version  # For debugging
   - micromamba env create -f conda-environment.yml
-  - micromamba run --name mxcubeweb poetry install
-  - micromamba run --name mxcubeweb poetry run pre-commit run --all-files
-  - micromamba run --name mxcubeweb poetry run pytest
 
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
+    - micromamba run --name mxcubeweb poetry install
 
 lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
-    - echo "Lint"
+    - micromamba run --name mxcubeweb poetry run pre-commit run --all-files
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
   script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - echo "Code coverage is 90%"
+    - micromamba run --name mxcubeweb poetry run pytest
 
 e2e-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
