@@ -19,11 +19,12 @@ stages:          # List of stages for jobs, and their order of execution
 
 before_script:
   - python --version ; pip --version  # For debugging
+  - pip install poetry
+  - poetry install
  
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
-    - poetry install
     - echo "Compiling the code..."
     - echo "Compile complete."
 
