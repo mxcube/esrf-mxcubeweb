@@ -26,7 +26,7 @@ before_script:
   - micromamba run --name mxcubeweb poetry install
   - micromamba run --name mxcubeweb poetry run pre-commit run --all-files
   - micromamba run --name mxcubeweb poetry run pytest
- 
+
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
