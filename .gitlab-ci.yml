@@ -30,16 +30,18 @@ before_script:
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
-    - micromamba run --name mxcubeweb poetry install
+    - echo "Build"
 
 lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
+    - micromamba run --name mxcubeweb poetry install
     - micromamba run --name mxcubeweb poetry run pre-commit run --all-files
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
   script:
+    - micromamba run --name mxcubeweb poetry install
     - micromamba run --name mxcubeweb poetry run pytest
 
 e2e-test-job:   # This job also runs in the test stage.
