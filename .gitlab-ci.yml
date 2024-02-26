@@ -23,6 +23,9 @@ before_script:
   - eval "$(./bin/micromamba shell hook -s posix)"
   - micromamba env create -f conda-environment.yml
   - micromamba run --name mxcubeweb poetry install
+
+  # Override mxcubecore with ESRF mxcubecore
+  - micromamba run --name mxcubeweb pip install https://gitlab.esrf.fr/marcus.oscarsson/mxcubecore.git
   - micromamba run --name mxcubeweb redis-server &
 
 build-job:       # This job runs in the build stage, which runs first.
