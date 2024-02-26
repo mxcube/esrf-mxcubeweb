@@ -25,7 +25,7 @@ before_script:
   - micromamba run --name mxcubeweb poetry install
 
   # Override mxcubecore with ESRF mxcubecore
-  - micromamba run --name mxcubeweb pip install https://gitlab.esrf.fr/marcus.oscarsson/mxcubecore.git
+  - micromamba run --name mxcubeweb pip install git+https://gitlab.esrf.fr/marcus.oscarsson/mxcubecore.git
   - micromamba run --name mxcubeweb redis-server &
 
 build-job:       # This job runs in the build stage, which runs first.
