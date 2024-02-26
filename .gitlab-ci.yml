@@ -28,6 +28,7 @@ before_script:
   - eval "$(./bin/micromamba shell hook -s posix)"
   - micromamba env create -f conda-environment.yml
   - micromamba run --name mxcubeweb poetry install
+  - micromamba run --name mxcubeweb pip install git+https://gitlab.esrf.fr/bcu/mxcubecore.git
   - micromamba run --name mxcubeweb redis-server &
 
 build-job:       # This job runs in the build stage, which runs first.
@@ -55,5 +56,5 @@ deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
   environment: production
   script:
-    - echo "Deploying application..."
+    - micromamba run --name mxcubeweb poetry build
     - echo "Application successfully deployed."
