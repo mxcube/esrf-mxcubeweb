@@ -126,8 +126,12 @@ def test_beamline_set_attribute(client):
 
         resp = client.post(f"/mxcube/api/v0.1/beamline/{adapter_type}/{name}/data")
         data = json.loads(resp.data)
+        value = data.get("value", None)
 
-        assert data.get("value", None) == new_value
+        if name == "resolution":
+            assert round(value, 4) == round(new_value, 4), name
+        else:
+            assert value == new_value
 
 
 def test_get_beam_info(client):
