@@ -31,11 +31,6 @@ before_script:
   - micromamba run --name mxcubeweb pip install git+https://gitlab.esrf.fr/bcu/mxcubecore.git
   - micromamba run --name mxcubeweb redis-server &
 
-build-job:       # This job runs in the build stage, which runs first.
-  stage: build
-  script:
-    - echo "Build"
-
 lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
