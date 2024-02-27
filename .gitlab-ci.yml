@@ -54,5 +54,5 @@ deploy-job:      # This job runs in the deploy stage.
     - echo ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
     - micromamba run --name mxcubeweb poetry build
     - micromamba run --name mxcubeweb poetry config repositories.gitlab ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
-    - micromamba run --name mxcubeweb poetry config http-basic.gitlab gitlab-ci-token $CI_JOB_TOKEN
-    - micromamba run --name mxcubeweb poetry publish --repository gitlab
+    #- micromamba run --name mxcubeweb poetry config http-basic.gitlab gitlab-ci-token $CI_JOB_TOKEN
+    - micromamba run --name mxcubeweb poetry publish --repository gitlab -u gitlab-ci-token -p $CI_JOB_TOKEN
