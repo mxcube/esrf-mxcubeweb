@@ -52,7 +52,7 @@ deploy-job:      # This job runs in the deploy stage.
   environment: production
   script:
     - git remote remove origin
-    - git remote add origin https://oauth2:${TAGTOKEN}gitlab.esrf.fr/bcu/mxcubeweb
+    - git remote add origin https://oauth2:${TAGTOKEN}@gitlab.esrf.fr/bcu/mxcubeweb
     - git config user.email oscarsso@esrf.fr
     - git config user.name marcus.oscarsson
     - git tag -a $(micromamba run --name mxcubeweb poetry version -s) -m "[skip ci] tagged $(micromamba run --name mxcubeweb poetry version -s)"
