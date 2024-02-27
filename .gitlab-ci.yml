@@ -55,7 +55,7 @@ deploy-job:      # This job runs in the deploy stage.
     - git remote add origin https://oauth2:${TAGTOKEN}gitlab.esrf.fr/bcu/mxcubeweb
     - git config user.email oscarsso@esrf.fr
     - git config user.name marcus.oscarsson
-    - git tag -a $({poetry version -s}) -m "[skip ci] tagged $({poetry version -s})"
+    - git tag -a $({micromamba run --name mxcubeweb poetry version -s}) -m "[skip ci] tagged $({micromamba run --name mxcubeweb poetry version -s})"
     - micromamba run --name mxcubeweb poetry build
     - micromamba run --name mxcubeweb poetry config repositories.gitlab ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
     - micromamba run --name mxcubeweb poetry config http-basic.gitlab gitlab-ci-token $CI_JOB_TOKEN
