@@ -127,6 +127,21 @@ class BeamlineSetupContainer extends React.Component {
                 </Nav.Item>,
               );
             }
+          } else if (
+            uiprop !== undefined &&
+            uiprop.value_type !== 'NSTATE' &&
+            uiprop.value_type !== 'MOTOR' &&
+            uiprop.value_type !== 'ACTUATOR' &&
+            uiprop.value_type !== 'ENERGY'
+          ) {
+            acts.push(
+              <Nav.Item key={key} className="ms-3">
+                <DeviceState
+                  labelText={uiprop.label}
+                  data={this.props.beamline.hardwareObjects[key].state}
+                />
+              </Nav.Item>,
+            );
           }
         }
       }
@@ -275,14 +290,6 @@ class BeamlineSetupContainer extends React.Component {
             </Nav.Item>
           </Nav>
           <Nav className="me-3">{this.createCameraComponent()}</Nav>
-          <Nav className="me-3">
-            <Nav.Item>
-              <DeviceState
-                labelText="Detector"
-                data={this.props.beamline.hardwareObjects.detector.state}
-              />
-            </Nav.Item>
-          </Nav>
           <Nav className="me-3">
             <Nav.Item>
               <SampleChangerSwitch
