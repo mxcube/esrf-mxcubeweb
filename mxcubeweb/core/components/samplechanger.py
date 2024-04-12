@@ -178,7 +178,7 @@ class SampleChanger(ComponentBase):
 
         return sample
 
-    def mount_sample_clean_up(self, sample):
+    def mount_sample_clean_up(self, sample, center_sample=True):
         from mxcubeweb.routes import signals
 
         sc = HWR.beamline.sample_changer
@@ -205,10 +205,9 @@ class SampleChanger(ComponentBase):
                 elif sc.get_loaded_sample().get_address() != sample["location"]:
                     res = sc.load(sample["sampleID"], wait=True)
 
-                if res is None:
-                    res = True
                 if (
-                    res
+                    res is not False
+                    and center_sample
                     and self.app.CENTRING_METHOD == queue_entry.CENTRING_METHOD.LOOP
                     and not HWR.beamline.diffractometer.in_plate_mode()
                 ):
@@ -395,6 +394,7 @@ class SampleChanger(ComponentBase):
             "queue", {"Signal": "update", "message": "all"}, namespace="/hwr"
         )
 
+
 # Disabling C901 function is too complex (19)
 def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noqa: C901
     from mxcubeweb.routes import signals
@@ -432,7 +432,7 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
         if sample_mount_device.__TYPE__ in ["Marvin", "CATS"]:
             element = "%d:%02d" % loc
             sample = {"location": element, "sampleID": element}
-            mxcube.sample_changer.mount_sample_clean_up(sample)
+            mxcube.sample_changer.mount_sample_clean_up(sample, center_sample=False)
         else:
             sample = {
                 "location": data_model.loc_str,
@@ -440,7 +440,9 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
             }
 
             try:
-                res = mxcube.sample_changer.mount_sample_clean_up(sample)
+                res = mxcube.sample_changer.mount_sample_clean_up(
+                    sample, center_sample=False
+                )
             except RuntimeError:
                 res = False
             logging.getLogger("user_level_log").info(
@@ -478,7 +480,7 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
             if dm is not None:
                 try:
                     dm.connect("centringAccepted", centring_done_cb)
-                    centring_method = queue_entry.CENTRING_METHOD
+                    centring_method = mxcube.CENTRING_METHOD
 
                     if centring_method == queue_entry.CENTRING_METHOD.MANUAL:
                         msg = (
@@ -494,7 +496,6 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
                         if not dm.current_centring_procedure:
                             dm.start_centring_method(dm.C3D_MODE)
 
-                        # NBNB  BUG . self and app are not avialble here
                         if mxcube.AUTO_MOUNT_SAMPLE:
                             msg = "Going to save centring automatically, please wait"
                         else:
