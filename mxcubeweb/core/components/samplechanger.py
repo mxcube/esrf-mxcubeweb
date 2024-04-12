@@ -395,6 +395,7 @@ class SampleChanger(ComponentBase):
             "queue", {"Signal": "update", "message": "all"}, namespace="/hwr"
         )
 
+
 # Disabling C901 function is too complex (19)
 def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noqa: C901
     from mxcubeweb.routes import signals
@@ -486,13 +487,13 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
                             + " user to center sample"
                         )
                         log.warning(msg)
-                        dm.start_centring_method(dm.MANUAL3CLICK_MODE)
+                        # dm.start_centring_method(dm.MANUAL3CLICK_MODE)
                     elif centring_method in [
                         queue_entry.CENTRING_METHOD.LOOP,
                         queue_entry.CENTRING_METHOD.FULLY_AUTOMATIC,
                     ]:
-                        if not dm.current_centring_procedure:
-                            dm.start_centring_method(dm.C3D_MODE)
+                        # if not dm.current_centring_procedure:
+                        #    dm.start_centring_method(dm.C3D_MODE)
 
                         # NBNB  BUG . self and app are not avialble here
                         if mxcube.AUTO_MOUNT_SAMPLE:
@@ -504,8 +505,8 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
                             )
 
                         log.warning(msg)
-                    else:
-                        dm.start_centring_method(dm.MANUAL3CLICK_MODE)
+                    # else:
+                    #    dm.start_centring_method(dm.MANUAL3CLICK_MODE)
 
                     logging.getLogger("user_level_log").info("Centring ...")
                     centring_result = async_result.get()
