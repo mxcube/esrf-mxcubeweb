@@ -42,6 +42,11 @@ tzlocal = "^4.2"
 mxcubecore = { git = "https://gitlab.esrf.fr/bcu/mxcubecore.git", branch = "prod" }
 mxcube-video-streamer = ">=1.0.0"
 bcrypt = "^4.0.1"
+gipc = "^1.4.0"
+lucid3 = "^3.0.0"
+python-ldap = "^3.4.0"
+authlib = "^1.3.0"
+
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "2.20.0"
