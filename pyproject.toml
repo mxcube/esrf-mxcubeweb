@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mxcubeweb"
-version = "4.65.0"
+version = "4.65.0+esrf.0412"
 license = "LGPL-3.0-or-later"
 description = "MXCuBE Web user interface"
 authors = ["The MXCuBE collaboration <mxcube@esrf.fr>"]
@@ -39,7 +39,7 @@ pydantic = "^1.10.2"
 PyDispatcher = "^2.0.6"
 pytz = "^2022.6"
 tzlocal = "^4.2"
-mxcubecore = ">=1.54.0"
+mxcubecore = { git = "https://gitlab.esrf.fr/bcu/mxcubecore.git", branch = "prod" }
 mxcube-video-streamer = ">=1.0.0"
 bcrypt = "^4.0.1"
 
