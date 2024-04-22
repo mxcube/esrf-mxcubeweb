@@ -288,7 +288,7 @@ class Beamline(ComponentBase):
 
     def diffractometer_set_phase(self, phase):
         try:
-            HWR.beamline.diffractometer.wait_device_ready(30)
+            HWR.beamline.diffractometer.wait_ready(30)
         except Exception:
             logging.getLogger("MX3.HWR").warning("Diffractometer not ready")
 
