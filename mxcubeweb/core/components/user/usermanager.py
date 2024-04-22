@@ -434,17 +434,18 @@ class UserManager(BaseUserManager):
         if self.app.lims.lims_valid_login(login_res) and is_local_host():
             if not self.app.lims.lims_existing_session(login_res):
                 login_res = self.app.lims.create_lims_session(login_res)
-
-            msg = "[LOGIN] Valid login from local host (%s)" % str(info)
+            msg = "[LOGIN] Valid login from local host"
             logging.getLogger("MX3.HWR").info(msg)
         elif self.app.lims.lims_valid_login(
             login_res
         ) and self.app.lims.lims_existing_session(login_res):
-            msg = "[LOGIN] Valid remote login from %s with existing session (%s)"
-            msg += msg % (remote_addr(), str(info))
+            msg = (
+                "[LOGIN] Valid remote login from %s with existing session"
+                % remote_addr()
+            )
             logging.getLogger("MX3.HWR").info(msg)
         else:
-            logging.getLogger("MX3.HWR").info("Invalid login %s" % info)
+            logging.getLogger("MX3.HWR").info("Invalid login")
             raise Exception(str(info))
 
         return login_res
