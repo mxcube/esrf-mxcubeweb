@@ -64,6 +64,7 @@ import {
 import { setEnergyScanResult } from './actions/taskResults';
 
 import { CLICK_CENTRING } from './constants';
+import { sendRefreshSession } from './api/login';
 import { store } from './store';
 import { hideWaitDialog, showWaitDialog } from './actions/waitDialog';
 
@@ -71,14 +72,46 @@ class ServerIO {
   constructor() {
     this.hwrSocket = null;
     this.loggingSocket = null;
+    this.uiStateSocket = null;
+    this.hwrsid = null;
     this.connected = false;
     this.initialized = false;
+
+    this.uiStorage = {
+      setItem: (key, value) => {
+        this.uiStateSocket.emit('ui_state_set', [key, value]);
+      },
+      getItem: (key, cb) => {
+        this.uiStateSocket.emit('ui_state_get', key, (value) => {
+          cb(false, value);
+        });
+      },
+      removeItem: (key) => {
+        this.uiStateSocket.emit('ui_state_rm', key);
+      },
+      getAllKeys: (cb) => {
+        this.uiStateSocket.emit('ui_state_getkeys', null, (value) => {
+          cb(false, value);
+        });
+      },
+    };
+  }
+
+  connectStateSocket(statePersistor) {
+    this.uiStateSocket = io.connect(
+      `//${document.domain}:${window.location.port}/ui_state`,
+    );
+
+    this.uiStateSocket.on('state_update', (newState) => {
+      statePersistor.rehydrate(JSON.parse(newState));
+    });
   }
 
   disconnect() {
     this.connected = false;
     this.hwrSocket.close();
     this.loggingSocket.close();
+    clearInterval(this.refreshInterval);
   }
 
   connect() {
@@ -92,7 +125,7 @@ class ServerIO {
       this.loggingSocket = io.connect(
         `//${document.domain}:${window.location.port}/logging`,
       );
-      this.loggingSocket.on('connect', () => {
+      this.hwrSocket.on('connect', () => {
         console.log('loggingSocket connected!'); // eslint-disable-line no-console
       });
     } else {
@@ -103,6 +136,7 @@ class ServerIO {
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   listen() {
+    this.refreshInterval = setInterval(sendRefreshSession, 9000);
     this.connect();
 
     if (this.initialized) {
@@ -120,8 +154,6 @@ class ServerIO {
     });
 
     this.loggingSocket.on('disconnect', (reason) => {
-      console.log('loggingSocket disconnected!'); // eslint-disable-line no-console
-
       if (reason === 'io server disconnect') {
         const socket = this.loggingSocket;
         setTimeout(() => {
@@ -321,15 +353,12 @@ class ServerIO {
     });
 
     this.hwrSocket.on('disconnect', (reason) => {
-      console.log('hwrSocket disconnected!'); // eslint-disable-line no-console
-
       if (reason === 'io server disconnect') {
         const socket = this.hwrSocket;
         setTimeout(() => {
           socket.connect();
         }, 500);
       }
-
       if (this.connected) {
         this.connected = false;
         setTimeout(() => {
@@ -355,11 +384,8 @@ class ServerIO {
 
       const newState = store.getState();
       const { inControl, requestsControl } = newState.login.user;
-      const hasIncomingRequest = newState.remoteAccess.observers.some(
-        (o) => o.requestsControl,
-      );
 
-      if (!wasInControl && inControl && !hasIncomingRequest) {
+      if (!wasInControl && inControl) {
         this.dispatch(showWaitDialog('You were given control', message));
       } else if (wasInControl && !inControl) {
         this.dispatch(showWaitDialog('You lost control'));
