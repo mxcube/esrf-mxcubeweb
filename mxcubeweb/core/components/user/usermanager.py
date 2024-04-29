@@ -362,13 +362,6 @@ class UserManager(BaseUserManager):
         login_res = self.app.lims.lims_login(login_id, password, create_session=False)
         inhouse = self.is_inhouse_user(login_id)
 
-        info = {
-            "valid": self.app.lims.lims_valid_login(login_res),
-            "local": is_local_host(),
-            "existing_session": self.app.lims.lims_existing_session(login_res),
-            "inhouse": inhouse,
-        }
-
         active_users = self.active_logged_in_users()
 
         if login_id in active_users:
@@ -429,7 +422,7 @@ class UserManager(BaseUserManager):
             logging.getLogger("MX3.HWR").info(msg)
         else:
             logging.getLogger("MX3.HWR").info("Invalid login")
-            raise Exception(str(info))
+            raise Exception("Invalid login")
 
         return login_res
 
