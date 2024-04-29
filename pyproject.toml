@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mxcubeweb"
-version = "4.68.0+esrf.0426"
+version = "4.68.0+esrf.0429"
 license = "LGPL-3.0-or-later"
 description = "MXCuBE Web user interface"
 authors = ["The MXCuBE collaboration <mxcube@esrf.fr>"]
