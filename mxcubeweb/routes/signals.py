@@ -33,7 +33,7 @@ def last_queue_node():
 
     # Reference collections are orphans, the node we want is the
     # characterisation not the reference collection itself
-    if "refdc" in node.get_name():
+    if "ref" in node.get_name():
         parent = node.get_parent()
         node = parent._children[0]
 
