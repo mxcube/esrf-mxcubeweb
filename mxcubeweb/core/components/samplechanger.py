@@ -219,7 +219,7 @@ class SampleChanger(ComponentBase):
                     and center_sample
                     and self.app.CENTRING_METHOD == queue_entry.CENTRING_METHOD.LOOP
                     and not HWR.beamline.diffractometer.in_plate_mode()
-                    and not mount_from_harvester
+                    and not self.app.harvester.mount_from_harvester()
                 ):
                     HWR.beamline.diffractometer.reject_centring()
                     msg = "Starting autoloop centring ..."
@@ -524,7 +524,7 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
                 if dm is not None:
                     try:
                         dm.connect("centringAccepted", centring_done_cb)
-                        centring_method = queue_entry.CENTRING_METHOD
+                        centring_method = mxcube.CENTRING_METHOD
 
                         if centring_method == queue_entry.CENTRING_METHOD.MANUAL:
                             msg = (
