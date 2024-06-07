@@ -170,15 +170,6 @@ class Lims(ComponentBase):
 
     def lims_existing_session(self, proposal_tuple: ProposalTuple) -> bool:
         return proposal_tuple.todays_session != None
-        # res = False
-        # try:
-        #    res = (
-        #        login_res.get("Session", {}).get("session", {}).get("sessionId", False)
-        #        and True
-        #    )
-        # except KeyError:
-        #    res = False
-        # return res
 
     def lims_valid_login(self, login_res: ProposalTuple):
         return login_res.status.code == "ok"
