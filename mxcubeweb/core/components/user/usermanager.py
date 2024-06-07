@@ -132,10 +132,7 @@ class BaseUserManager(ComponentBase):
         # If no user is currently in control set this user to be
         # in control
         if not active_in_control:
-            if HWR.beamline.lims.loginType.lower() != "user":
-                import pdb
-
-                pdb.set_trace()
+            if HWR.beamline.lims.loginType.lower() != "user":     
                 current_user.nickname = self.app.lims.get_proposal(current_user)
             else:
                 current_user.nickname = current_user.username
