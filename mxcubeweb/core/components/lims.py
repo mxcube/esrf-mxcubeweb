@@ -9,6 +9,7 @@ import json
 from mxcubecore import HardwareRepository as HWR
 from mxcubecore.model import queue_model_objects as qmo
 
+from mxcubecore.model.lims_session import ProposalTuple
 from mxcubeweb.core.components.component_base import ComponentBase
 from mxcubeweb.core.util import fsutils
 from flask_login import current_user
@@ -167,21 +168,20 @@ class Lims(ComponentBase):
 
         return prefix
 
-    def lims_existing_session(self, login_res):
-        res = False
+    def lims_existing_session(self, proposal_tuple: ProposalTuple) -> bool:
+        return proposal_tuple.todays_session != None
+        # res = False
+        # try:
+        #    res = (
+        #        login_res.get("Session", {}).get("session", {}).get("sessionId", False)
+        #        and True
+        #    )
+        # except KeyError:
+        #    res = False
+        # return res
 
-        try:
-            res = (
-                login_res.get("Session", {}).get("session", {}).get("sessionId", False)
-                and True
-            )
-        except KeyError:
-            res = False
-
-        return res
-
-    def lims_valid_login(self, login_res):
-        return login_res["status"]["code"] == "ok"
+    def lims_valid_login(self, login_res: ProposalTuple):
+        return login_res.status.code == "ok"
 
     def lims_login(self, loginID, password, create_session):
         """
@@ -193,6 +193,7 @@ class Lims(ComponentBase):
         'proposalList':[]
         }
         """
+
         login_res = {}
         # If this is used often, it could be moved to a better place.
         ERROR_CODE = dict({"status": {"code": "0"}})
@@ -243,28 +244,20 @@ class Lims(ComponentBase):
             }
         else:
             try:
-                login_res = HWR.beamline.lims.login(
+                login_res: ProposalTuple = HWR.beamline.lims.login(
                     loginID, password, create_session=create_session
                 )
-                proposal = HWR.beamline.lims.get_proposal(
-                    login_res["Proposal"]["code"],
-                    login_res["Proposal"]["number"],
-                )
-
             except Exception:
                 logging.getLogger("MX3.HWR").error("[LIMS] Could not login to LIMS")
                 return ERROR_CODE
 
-            login_res["proposalList"] = [proposal]
-
             logging.getLogger("MX3.HWR").info(
                 "[LIMS] Logged in, valid proposal: %s%s"
                 % (
-                    login_res["Proposal"]["code"],
-                    login_res["Proposal"]["number"],
+                    login_res.proposal.code,
+                    login_res.proposal.number,
                 )
             )
-
         return login_res
 
     def create_lims_session(self, login_res):
@@ -291,12 +284,10 @@ class Lims(ComponentBase):
         return {}
 
     def get_proposal(self, user):
-        limsdata = json.loads(user.limsdata)
-        proposal = "%s%s" % (
-            limsdata.get("Proposal").get("code", "").lower(),
-            limsdata.get("Proposal").get("number", ""),
+        proposalTuple: ProposalTuple = ProposalTuple.parse_obj(
+            json.loads(user.limsdata)
         )
-        return proposal
+        return "%s%s" % (proposalTuple.proposal.code, proposalTuple.proposal.number)
 
     def is_rescheduled_session(self, session):
         """
