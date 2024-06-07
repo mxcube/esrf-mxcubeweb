@@ -11,6 +11,7 @@ from flask_login import current_user
 # from authlib.oauth2.rfc6749 import OAuth2Token
 from authlib.integrations.flask_client import OAuth
 
+from mxcubecore.model.lims_session import ProposalTuple
 from mxcubeweb.core.components.component_base import ComponentBase
 from mxcubeweb.core.models.usermodels import User
 from mxcubeweb.core.util.networkutils import is_local_host, remote_addr
@@ -132,6 +133,9 @@ class BaseUserManager(ComponentBase):
         # in control
         if not active_in_control:
             if HWR.beamline.lims.loginType.lower() != "user":
+                import pdb
+
+                pdb.set_trace()
                 current_user.nickname = self.app.lims.get_proposal(current_user)
             else:
                 current_user.nickname = current_user.username
@@ -172,7 +176,7 @@ class BaseUserManager(ComponentBase):
     def login(self, login_id: str, password: str, sso_data: dict = {}):
         try:
             login_res = self._login(login_id, password)
-        except Exception:
+        except Exception as e:
             raise
         else:
             if "sid" not in flask.session:
@@ -294,7 +298,9 @@ class BaseUserManager(ComponentBase):
 
         return list(roles)
 
-    def db_create_user(self, user: str, password: str, lims_data: dict, sso_data: dict):
+    def db_create_user(
+        self, user: str, password: str, lims_data: ProposalTuple, sso_data: dict
+    ):
         sid = flask.session["sid"]
         user_datastore = self.app.server.user_datastore
         username = f"{user}-{str(uuid.uuid4())}"
@@ -322,12 +328,12 @@ class BaseUserManager(ComponentBase):
                 nickname=user,
                 session_id=sid,
                 selected_proposal=selected_proposal,
-                limsdata=json.dumps(lims_data),
+                limsdata=lims_data.json(),  # json.dumps(lims_data),
                 refresh_token=sso_data.get("refresh_token", str(uuid.uuid4())),
                 roles=self._get_configured_roles(user),
             )
         else:
-            _u.limsdata = json.dumps(lims_data)
+            _u.limsdata = lims_data.json()  # json.dumps(lims_data)
             _u.refresh_token = sso_data.get("refresh_token", "")
             user_datastore.append_roles(_u, self._get_configured_roles(user))
 
@@ -359,6 +365,7 @@ class UserManager(BaseUserManager):
         super().__init__(app, config)
 
     def _login(self, login_id: str, password: str):
+
         login_res = self.app.lims.lims_login(login_id, password, create_session=False)
         inhouse = self.is_inhouse_user(login_id)
 
