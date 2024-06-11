@@ -156,7 +156,7 @@ class BaseUserManager(ComponentBase):
         return user_id in user_id_list
 
     # Abstract method to be implemented by concrete implementation
-    def _login(self, login_id, password):
+    def _login(self, login_id, password) -> ProposalTuple:
         pass
 
     def sso_validate(self) -> str:
@@ -172,7 +172,8 @@ class BaseUserManager(ComponentBase):
 
     def login(self, login_id: str, password: str, sso_data: dict = {}):
         try:
-            login_res = self._login(login_id, password)
+            proposal_tuple: ProposalTuple = self._login(login_id, password)
+            print(proposal_tuple)
         except Exception as e:
             raise
         else:
@@ -183,7 +184,7 @@ class BaseUserManager(ComponentBase):
             # before calling login
             self.update_active_users()
 
-            user = self.db_create_user(login_id, password, login_res, sso_data)
+            user = self.db_create_user(login_id, password, proposal_tuple, sso_data)
             self.app.server.user_datastore.activate_user(user)
             flask_security.login_user(user, remember=False)
 
@@ -246,21 +247,22 @@ class BaseUserManager(ComponentBase):
             self.app.server.emit("forceSignout", room=socketio_sid, namespace="/hwr")
 
     def login_info(self):
-        if not current_user.is_anonymous:
-            login_info = convert_to_dict(json.loads(current_user.limsdata))
 
+        if not current_user.is_anonymous:
+            login_info: ProposalTuple = self.app.lims.get_proposal_info()
             self.update_operator()
-            proposal_list = []
-            for prop in login_info.get("proposalList", []):
-                session = prop["Session"][0]
-                proposal_list.append(session)
+            # proposal_list = []
+            # for prop in login_info.get("proposalList", []):
+            #    session = prop["Session"][0]
+            #    proposal_list.append(session)
 
             res = {
                 "synchrotronName": HWR.beamline.session.synchrotron_name,
                 "beamlineName": HWR.beamline.session.beamline_name,
                 "loggedIn": True,
                 "loginType": HWR.beamline.lims.loginType.title(),
-                "proposalList": proposal_list,
+                # "proposalList": proposal_list,
+                "proposalList": [session.__dict__ for session in login_info.sessions],
                 "rootPath": HWR.beamline.session.get_base_image_directory(),
                 "user": current_user.todict(),
             }
@@ -272,8 +274,8 @@ class BaseUserManager(ComponentBase):
 
             res["selectedProposalID"] = HWR.beamline.session.proposal_id
         else:
+            logging.getLogger("MX3.HWR").error("Error not logged in")
             raise Exception("Not logged in")
-
         return res
 
     def update_user(self, user):
@@ -361,9 +363,17 @@ class UserManager(BaseUserManager):
     def __init__(self, app, config):
         super().__init__(app, config)
 
-    def _login(self, login_id: str, password: str):
+    def _debug(self, msg: str):
+        logging.getLogger("HWR").info(msg)
 
-        login_res = self.app.lims.lims_login(login_id, password, create_session=False)
+    def _login(self, login_id: str, password: str) -> ProposalTuple:
+
+        self._debug("_login. login_id=%s" % login_id)
+
+        login_res: ProposalTuple = self.app.lims.lims_login(
+            login_id, password, create_session=False
+        )
+        self._debug("_login. proposal_tuple retrieved %s " % login_res.proposal)
         inhouse = self.is_inhouse_user(login_id)
 
         active_users = self.active_logged_in_users()
@@ -414,8 +424,7 @@ class UserManager(BaseUserManager):
         if self.app.lims.lims_valid_login(login_res) and is_local_host():
             if not self.app.lims.lims_existing_session(login_res):
                 login_res = self.app.lims.create_lims_session(login_res)
-            msg = "[LOGIN] Valid login from local host"
-            logging.getLogger("MX3.HWR").info(msg)
+            logging.getLogger("MX3.HWR").info("[LOGIN] Valid login from localhost")
         elif self.app.lims.lims_valid_login(
             login_res
         ) and self.app.lims.lims_existing_session(login_res):
