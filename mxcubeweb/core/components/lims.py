@@ -223,25 +223,22 @@ class Lims(ComponentBase):
         self, loginID, password, create_session
     ) -> ProposalTuple:
         try:
-            logging.getLogger("MX3.HWR").error(
-                "[LIMS] lims_login_by_proposal %s", loginID
-            )
+            logging.getLogger("MX3.HWR").debug("lims_login_by_proposal %s", loginID)
             login_res: ProposalTuple = HWR.beamline.lims.login(
                 loginID, password, create_session=create_session
             )
+            logging.getLogger("MX3.HWR").info(
+                "[LIMS] Logged in, valid proposal: %s%s"
+                % (
+                    login_res.proposal.code,
+                    login_res.proposal.number,
+                )
+            )
+
+            return login_res
         except Exception:
             logging.getLogger("MX3.HWR").error("[LIMS] Could not login to LIMS")
             return ProposalTuple(status=Status(code="error"))
-
-        logging.getLogger("MX3.HWR").info(
-            "[LIMS] Logged in, valid proposal: %s%s"
-            % (
-                login_res.proposal.code,
-                login_res.proposal.number,
-            )
-        )
-        print(login_res)
-        return login_res
 
     def lims_login(self, loginID, password, create_session):
         if HWR.beamline.lims.loginType.lower() == "user":
@@ -395,7 +392,6 @@ class Lims(ComponentBase):
         # session_id is not used, so we can pass None as second argument to
         # 'db_connection.get_samples'
         lims_samples = HWR.beamline.lims.get_samples(proposal_id, None)
-
         samples_info_list = lims_samples
 
         for sample_info in samples_info_list:
@@ -437,6 +433,7 @@ class Lims(ComponentBase):
                 )
             else:
                 sample_info["lims_location"] = lims_location
+
                 self.sample_list_sync_sample(sample_info)
 
         return self.sample_list_get()
