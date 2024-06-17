@@ -181,11 +181,15 @@ class Lims(ComponentBase):
             connection_ok = HWR.beamline.lims.echo()
             if not connection_ok:
                 HWR.beamline.lims.init()
-        except Exception:
+        except Exception as e:
+            print(e)
             msg = "[LIMS] Connection Error!"
             logging.getLogger("MX3.HWR").error(msg)
             return ERROR_CODE
         try:
+            logging.getLogger("MX3.HWR").debug(
+                "lims.login %s %s" % loginID, create_session
+            )
             login_res = HWR.beamline.lims.login(
                 loginID, password, create_session=create_session
             )
@@ -219,14 +223,10 @@ class Lims(ComponentBase):
             "msg": "Successful login",
         }
 
-    def lims_login_by_proposal(
-        self, loginID, password, create_session
-    ) -> ProposalTuple:
+    def lims_login_by_proposal(self, loginID, password) -> ProposalTuple:
         try:
-            logging.getLogger("MX3.HWR").debug("lims_login_by_proposal %s", loginID)
-            login_res: ProposalTuple = HWR.beamline.lims.login(
-                loginID, password, create_session=create_session
-            )
+            logging.getLogger("MX3.HWR").debug("lims_login_by_proposal %s" % (loginID))
+            login_res: ProposalTuple = HWR.beamline.lims.login(loginID, password)
             logging.getLogger("MX3.HWR").info(
                 "[LIMS] Logged in, valid proposal: %s%s"
                 % (
@@ -240,16 +240,26 @@ class Lims(ComponentBase):
             logging.getLogger("MX3.HWR").error("[LIMS] Could not login to LIMS")
             return ProposalTuple(status=Status(code="error"))
 
-    def lims_login(self, loginID, password, create_session):
-        if HWR.beamline.lims.loginType.lower() == "user":
-            return self.lims_login_by_user(loginID, password, create_session)
-        else:
-            return self.lims_login_by_proposal(loginID, password, create_session)
+    def lims_login(self, loginID, password):
+        try:
+            if HWR.beamline.lims.loginType.lower() == "user":
+                return self.lims_login_by_user(loginID, password)
+            else:
+                return self.lims_login_by_proposal(loginID, password)
+        except Exception as e:
+            logging.getLogger("MX3.HWR").error(e)
+            raise
 
-    def create_lims_session(self, proposal_tuple: ProposalTuple) -> Session:
-        logging.getLogger("MX3.HWR").info(
-            "[LIMS] TO BE IMPLEMENTED, CREATED LIMS SESSION"
+    def create_lims_session(self, proposal_tuple: ProposalTuple) -> ProposalTuple:
+
+        logging.getLogger("MX3.HWR").debug(
+            "create_lims_session %s", proposal_tuple.todays_session
         )
+        if proposal_tuple.todays_session is None:
+            logging.getLogger("MX3.HWR").info(
+                "create_lims_session. Creating sessions for proposal %s",
+                proposal_tuple.proposal,
+            )
         # return proposal_tuple.todays_session
         return proposal_tuple
 
@@ -281,6 +291,8 @@ class Lims(ComponentBase):
         logging.getLogger("MX3.HWR").info(
             "[LIMS] get_todays_session create_session=%s." % create_session
         )
+        if proposal_tuple.todays_session:
+            return proposal_tuple.todays_session
         return proposal_tuple.todays_session
 
     def select_proposal(self, proposal_name):
