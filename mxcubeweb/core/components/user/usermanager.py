@@ -173,8 +173,8 @@ class BaseUserManager(ComponentBase):
     def login(self, login_id: str, password: str, sso_data: dict = {}):
         try:
             proposal_tuple: ProposalTuple = self._login(login_id, password)
-            print(proposal_tuple)
         except Exception as e:
+            print(e)
             raise
         else:
             if "sid" not in flask.session:
@@ -370,10 +370,8 @@ class UserManager(BaseUserManager):
 
         self._debug("_login. login_id=%s" % login_id)
 
-        login_res: ProposalTuple = self.app.lims.lims_login(
-            login_id, password, create_session=False
-        )
-        self._debug("_login. proposal_tuple retrieved %s " % login_res.proposal)
+        proposal_tuple: ProposalTuple = self.app.lims.lims_login(login_id, password)
+        self._debug("_login. proposal_tuple retrieved %s " % proposal_tuple)
         inhouse = self.is_inhouse_user(login_id)
 
         active_users = self.active_logged_in_users()
@@ -421,13 +419,13 @@ class UserManager(BaseUserManager):
             raise Exception("Remote access disabled")
 
         # Only allow remote logins with existing sessions
-        if self.app.lims.lims_valid_login(login_res) and is_local_host():
-            if not self.app.lims.lims_existing_session(login_res):
-                login_res = self.app.lims.create_lims_session(login_res)
+        if self.app.lims.lims_valid_login(proposal_tuple) and is_local_host():
+            if not self.app.lims.lims_existing_session(proposal_tuple):
+                proposal_tuple = self.app.lims.create_lims_session(proposal_tuple)
             logging.getLogger("MX3.HWR").info("[LOGIN] Valid login from localhost")
         elif self.app.lims.lims_valid_login(
-            login_res
-        ) and self.app.lims.lims_existing_session(login_res):
+            proposal_tuple
+        ) and self.app.lims.lims_existing_session(proposal_tuple):
             msg = (
                 "[LOGIN] Valid remote login from %s with existing session"
                 % remote_addr()
@@ -437,7 +435,7 @@ class UserManager(BaseUserManager):
             logging.getLogger("MX3.HWR").info("Invalid login")
             raise Exception("Invalid login")
 
-        return login_res
+        return proposal_tuple
 
     def _signout(self):
         requests.post(
