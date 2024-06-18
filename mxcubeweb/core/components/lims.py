@@ -181,10 +181,8 @@ class Lims(ComponentBase):
             connection_ok = HWR.beamline.lims.echo()
             if not connection_ok:
                 HWR.beamline.lims.init()
-        except Exception as e:
-            print(e)
-            msg = "[LIMS] Connection Error!"
-            logging.getLogger("MX3.HWR").error(msg)
+        except Exception:
+            logging.getLogger("MX3.HWR").error("[LIMS] Connection Error!")
             return ERROR_CODE
         try:
             logging.getLogger("MX3.HWR").debug(
@@ -226,16 +224,12 @@ class Lims(ComponentBase):
     def lims_login_by_proposal(self, loginID, password) -> ProposalTuple:
         try:
             logging.getLogger("MX3.HWR").debug("lims_login_by_proposal %s" % (loginID))
-            login_res: ProposalTuple = HWR.beamline.lims.login(loginID, password)
+            proposal_tuple: ProposalTuple = HWR.beamline.lims.login(loginID, password)
             logging.getLogger("MX3.HWR").info(
-                "[LIMS] Logged in, valid proposal: %s%s"
-                % (
-                    login_res.proposal.code,
-                    login_res.proposal.number,
-                )
+                "[LIMS] Logged in, valid proposal: %s" % (proposal_tuple)
             )
 
-            return login_res
+            return proposal_tuple
         except Exception:
             logging.getLogger("MX3.HWR").error("[LIMS] Could not login to LIMS")
             return ProposalTuple(status=Status(code="error"))
@@ -253,13 +247,11 @@ class Lims(ComponentBase):
     def create_lims_session(self, proposal_tuple: ProposalTuple) -> ProposalTuple:
 
         logging.getLogger("MX3.HWR").debug(
-            "create_lims_session %s", proposal_tuple.todays_session
+            "create_lims_session %s", proposal_tuple.proposal
         )
         if proposal_tuple.todays_session is None:
-            logging.getLogger("MX3.HWR").info(
-                "create_lims_session. Creating sessions for proposal %s",
-                proposal_tuple.proposal,
-            )
+            proposal_tuple = HWR.beamline.lims.create_session(proposal_tuple)
+
         # return proposal_tuple.todays_session
         return proposal_tuple
 
@@ -293,6 +285,10 @@ class Lims(ComponentBase):
         )
         if proposal_tuple.todays_session:
             return proposal_tuple.todays_session
+
+        if create_session:
+            proposal_tuple = HWR.beamline.lims.create_session(proposal_tuple)
+
         return proposal_tuple.todays_session
 
     def select_proposal(self, proposal_name):
