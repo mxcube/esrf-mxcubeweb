@@ -174,6 +174,7 @@ class Lims(ComponentBase):
     def lims_valid_login(self, login_res: ProposalTuple):
         return login_res.status.code == "ok"
 
+    """
     def lims_login_by_user(self, loginID, password, create_session):
         # If this is used often, it could be moved to a better place.
         ERROR_CODE = dict({"status": {"code": "0"}})
@@ -220,7 +221,7 @@ class Lims(ComponentBase):
             "code": "ok",
             "msg": "Successful login",
         }
-
+    
     def lims_login_by_proposal(self, loginID, password) -> ProposalTuple:
         try:
             logging.getLogger("MX3.HWR").debug("lims_login_by_proposal %s" % (loginID))
@@ -233,13 +234,20 @@ class Lims(ComponentBase):
         except Exception:
             logging.getLogger("MX3.HWR").error("[LIMS] Could not login to LIMS")
             return ProposalTuple(status=Status(code="error"))
+    """
 
     def lims_login(self, loginID, password):
         try:
-            if HWR.beamline.lims.loginType.lower() == "user":
-                return self.lims_login_by_user(loginID, password)
-            else:
-                return self.lims_login_by_proposal(loginID, password)
+            # if HWR.beamline.lims.loginType.lower() == "user":
+            #    return self.lims_login_by_user(loginID, password)
+            # else:
+            #    return self.lims_login_by_proposal(loginID, password)
+            logging.getLogger("MX3.HWR").debug("lims_login_by_proposal %s" % (loginID))
+            proposal_tuple: ProposalTuple = HWR.beamline.lims.login(loginID, password)
+            logging.getLogger("MX3.HWR").info(
+                "[LIMS] Logged in, valid proposal: %s" % (proposal_tuple)
+            )
+            return proposal_tuple
         except Exception as e:
             logging.getLogger("MX3.HWR").error(e)
             raise
@@ -298,8 +306,9 @@ class Lims(ComponentBase):
         proposal_tuple = self.get_proposal_info()
 
         if (
-            HWR.beamline.lims.loginType.lower() == "user"
-            and "Commissioning" in proposal_tuple.proposal.title
+            # HWR.beamline.lims.loginType.lower() == "user" and
+            "Commissioning"
+            in proposal_tuple.proposal.title
         ):
             if hasattr(HWR.beamline.session, "set_in_commissioning"):
                 HWR.beamline.session.set_in_commissioning(proposal_tuple)
@@ -377,19 +386,19 @@ class Lims(ComponentBase):
         return link
 
     def get_dc_thumbnail(self, image_id):
-        fname, data = HWR.beamline.lims.lims_rest.get_dc_thumbnail(image_id)
+        fname, data = HWR.beamline.lims.get_dc_thumbnail(image_id)
         data = io.BytesIO(data)
 
         return fname, data
 
     def get_dc_image(self, image_id):
-        fname, data = HWR.beamline.lims.lims_rest.get_dc_image(image_id)
+        fname, data = HWR.beamline.lims.get_dc_image(image_id)
         data = io.BytesIO(data)
 
         return fname, data
 
     def get_quality_indicator_plot(self, dc_id):
-        data = HWR.beamline.lims.lims_rest.get_quality_indicator_plot(dc_id)
+        data = HWR.beamline.lims.get_quality_indicator_plot(dc_id)
         data = io.BytesIO(data)
 
         return "qind", data
