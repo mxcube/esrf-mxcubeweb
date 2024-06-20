@@ -354,8 +354,8 @@ class Queue(ComponentBase):
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
-        if include_lims_data and HWR.beamline.lims.lims_rest:
-            limsres = HWR.beamline.lims.lims_rest.get_dc(lims_id)
+        if include_lims_data:
+            limsres = HWR.beamline.lims.get_dc(lims_id)
 
         # Always add link to data, (no request made)
         limsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
@@ -416,8 +416,8 @@ class Queue(ComponentBase):
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
-        if include_lims_data and HWR.beamline.lims.lims_rest:
-            limsres = HWR.beamline.lims.lims_rest.get_dc(lims_id)
+        if include_lims_data:
+            limsres = HWR.beamline.lims.get_dc(lims_id)
 
         # Always add link to data, (no request made)
         limsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
@@ -465,8 +465,8 @@ class Queue(ComponentBase):
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
-        if include_lims_data and HWR.beamline.lims.lims_rest:
-            limsres = HWR.beamline.lims.lims_rest.get_dc(lims_id)
+        if include_lims_data:
+            limsres = HWR.beamline.lims.get_dc(lims_id)
 
         # Always add link to data, (no request made)
         limsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
@@ -583,8 +583,8 @@ class Queue(ComponentBase):
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
-        if include_lims_data and HWR.beamline.lims.lims_rest:
-            limsres = HWR.beamline.lims.lims_rest.get_dc(lims_id)
+        if include_lims_data:
+            limsres = HWR.beamline.lims.get_dc(lims_id)
 
         # Always add link to data, (no request made)
         limsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
