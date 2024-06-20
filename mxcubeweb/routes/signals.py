@@ -253,7 +253,7 @@ def get_task_state(entry):
     lims_id = mxcube.NODE_ID_TO_LIMS_ID.get(node_id, "null")
 
     try:
-        limsres = HWR.beamline.lims.lims_rest.get_dc(lims_id)
+        limsres = HWR.beamline.lims.get_dc(lims_id)
     except Exception:
         limsres = {}
 
@@ -284,7 +284,7 @@ def update_task_result(entry):
     lims_id = mxcube.NODE_ID_TO_LIMS_ID.get(node_id, "null")
 
     try:
-        limsres = HWR.beamline.lims_rest.get_dc(lims_id)
+        limsres = HWR.beamline.get_dc(lims_id)
     except Exception:
         limsres = {}
 
@@ -446,7 +446,7 @@ def collect_oscillation_failed(
 
     if not mxcube.queue.is_interleaved(node["node"]):
         try:
-            HWR.beamline.lims_rest.get_dc(lims_id)
+            HWR.beamline.get_dc(lims_id)
         except Exception:
             pass
 
