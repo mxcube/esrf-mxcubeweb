@@ -62,7 +62,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
     @bp.route("/dc/<dc_id>", methods=["GET"])
     @server.restrict
     def get_dc(dc_id):
-        data = HWR.beamline.lims_rest.get_dc(dc_id)
+        data = HWR.beamline.lims.get_dc(dc_id)
         return jsonify(data)
 
     @bp.route("/proposal", methods=["POST"])
