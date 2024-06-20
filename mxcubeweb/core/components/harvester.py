@@ -157,7 +157,7 @@ class Harvester(ComponentBase):
         crystal_uuid = ""
 
         try:
-            rest_token = HWR.beamline.lims.lims_rest.get_rest_token()
+            rest_token = HWR.beamline.lims.get_rest_token()
             proposal = HWR.beamline.session.get_proposal()
 
             crims_url = self.harvester_device.crims_upload_url

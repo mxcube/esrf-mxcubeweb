@@ -132,7 +132,7 @@ class BaseUserManager(ComponentBase):
         # If no user is currently in control set this user to be
         # in control
         if not active_in_control:
-            if HWR.beamline.lims.loginType.lower() != "user":
+            if not HWR.beamline.lims.is_user_login_type():
                 current_user.nickname = self.app.lims.get_proposal(current_user)
             else:
                 current_user.nickname = current_user.username
@@ -142,7 +142,7 @@ class BaseUserManager(ComponentBase):
         # Set active proposal to that of the active user
         for _u in User.query.all():
             if _u.is_authenticated and _u.in_control:
-                if HWR.beamline.lims.loginType.lower() != "user":
+                if not HWR.beamline.lims.is_user_login_type():
                     self.app.lims.select_proposal(self.app.lims.get_proposal(_u))
                 elif _u.selected_proposal is not None:
                     self.app.lims.select_proposal(_u.selected_proposal)
@@ -174,7 +174,7 @@ class BaseUserManager(ComponentBase):
         try:
             proposal_tuple: ProposalTuple = self._login(login_id, password)
         except Exception as e:
-            print(e)
+            logging.getLogger("MX3.HWR").error(str(e))
             raise
         else:
             if "sid" not in flask.session:
@@ -255,12 +255,14 @@ class BaseUserManager(ComponentBase):
             # for prop in login_info.get("proposalList", []):
             #    session = prop["Session"][0]
             #    proposal_list.append(session)
-
+            login_type = (
+                "user" if HWR.beamline.lims.is_user_login_type() else "proposal"
+            )
             res = {
                 "synchrotronName": HWR.beamline.session.synchrotron_name,
                 "beamlineName": HWR.beamline.session.beamline_name,
                 "loggedIn": True,
-                "loginType": HWR.beamline.lims.loginType.title(),
+                "loginType": login_type,
                 # "proposalList": proposal_list,
                 "proposalList": [session.__dict__ for session in login_info.sessions],
                 "rootPath": HWR.beamline.session.get_base_image_directory(),
@@ -302,9 +304,9 @@ class BaseUserManager(ComponentBase):
     ):
         sid = flask.session["sid"]
         user_datastore = self.app.server.user_datastore
-        username = f"{user}-{str(uuid.uuid4())}"
-        if HWR.beamline.lims.loginType.lower() == "user":
-            username = f"{user}"
+        username = HWR.beamline.lims.get_user_name()
+        # if HWR.beamline.lims.loginType.lower() == "user":
+        #    username = f"{user}"
 
         # Make sure that the roles staff and incontrol always
         # exists
@@ -316,7 +318,7 @@ class BaseUserManager(ComponentBase):
         _u = user_datastore.find_user(username=username)
 
         if not _u:
-            if HWR.beamline.lims.loginType.lower() != "user":
+            if not HWR.beamline.lims.is_user_login_type():
                 selected_proposal = user
             else:
                 selected_proposal = None
@@ -401,7 +403,7 @@ class UserManager(BaseUserManager):
             (not inhouse)
             and non_inhouse_active_users
             and (login_id not in [p.split("-")[0] for p in non_inhouse_active_users])
-            and HWR.beamline.lims.loginType.lower() != "user"
+            and not HWR.beamline.lims.is_user_login_type()
         ):
             raise Exception("Another user is already logged in")
 
@@ -410,7 +412,7 @@ class UserManager(BaseUserManager):
             if (
                 active_users
                 and current_user.username != login_id
-                and HWR.beamline.lims.loginType.lower() == "user"
+                and HWR.beamline.lims.is_user_login_type()
             ):
                 raise Exception("Another user is already logged in")
 
