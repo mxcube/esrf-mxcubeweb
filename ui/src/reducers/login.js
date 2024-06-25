@@ -35,15 +35,14 @@ function loginReducer(state = INITIAL_STATE, action = {}) {
       const proposals = state.proposalList;
 
       const propInfo = proposals.find((prop) => {
-        const name = `${prop.code}${prop.number}`;
-        return name === action.proposal;
+        //const name = `${prop.code}${prop.number}`;
+        return prop.session_id === action.proposal;
       });
-      const propId = propInfo.proposalId;
 
       return {
         ...state,
         selectedProposal: action.proposal,
-        selectedProposalID: propId,
+        selectedProposalID: propInfo.session_id,
         showProposalsForm: false,
       };
     }
