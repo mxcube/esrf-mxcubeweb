@@ -143,9 +143,9 @@ class BaseUserManager(ComponentBase):
         for _u in User.query.all():
             if _u.is_authenticated and _u.in_control:
                 if not HWR.beamline.lims.is_user_login_type():
-                    self.app.lims.select_proposal(self.app.lims.get_proposal(_u))
+                    self.app.lims.select_session(self.app.lims.get_proposal(_u))
                 elif _u.selected_proposal is not None:
-                    self.app.lims.select_proposal(_u.selected_proposal)
+                    self.app.lims.select_session(_u.selected_proposal)
 
     def is_inhouse_user(self, user_id):
         user_id_list = [
@@ -162,7 +162,6 @@ class BaseUserManager(ComponentBase):
     def sso_validate(self) -> str:
         try:
             token_response = self.oauth_client.keycloak.authorize_access_token()
-
             username = token_response["userinfo"]["preferred_username"]
             token = token_response["access_token"]
         except Exception:
@@ -247,16 +246,15 @@ class BaseUserManager(ComponentBase):
             self.app.server.emit("forceSignout", room=socketio_sid, namespace="/hwr")
 
     def login_info(self):
-
         if not current_user.is_anonymous:
-            login_info: ProposalTuple = self.app.lims.get_proposal_info()
+            proposal_tuple: ProposalTuple = self.app.lims.get_proposal_info()
             self.update_operator()
             # proposal_list = []
             # for prop in login_info.get("proposalList", []):
             #    session = prop["Session"][0]
             #    proposal_list.append(session)
             login_type = (
-                "user" if HWR.beamline.lims.is_user_login_type() else "proposal"
+                "User" if HWR.beamline.lims.is_user_login_type() else "Proposal"
             )
             res = {
                 "synchrotronName": HWR.beamline.session.synchrotron_name,
@@ -264,7 +262,9 @@ class BaseUserManager(ComponentBase):
                 "loggedIn": True,
                 "loginType": login_type,
                 # "proposalList": proposal_list,
-                "proposalList": [session.__dict__ for session in login_info.sessions],
+                "proposalList": [
+                    session.__dict__ for session in proposal_tuple.sessions
+                ],
                 "rootPath": HWR.beamline.session.get_base_image_directory(),
                 "user": current_user.todict(),
             }
@@ -304,12 +304,14 @@ class BaseUserManager(ComponentBase):
     ):
         sid = flask.session["sid"]
         user_datastore = self.app.server.user_datastore
+
         username = HWR.beamline.lims.get_user_name()
         # if HWR.beamline.lims.loginType.lower() == "user":
         #    username = f"{user}"
 
         # Make sure that the roles staff and incontrol always
         # exists
+
         if not user_datastore.find_role("staff"):
             user_datastore.create_role(name="staff")
             user_datastore.create_role(name="incontrol")
@@ -371,9 +373,16 @@ class UserManager(BaseUserManager):
     def _login(self, login_id: str, password: str) -> ProposalTuple:
 
         self._debug("_login. login_id=%s" % login_id)
+        try:
+            proposal_tuple: ProposalTuple = self.app.lims.lims_login(login_id, password)
+        except Exception as e:
+            logging.getLogger("MX3.HWR").error(e)
+            raise Exception("Failed to log in the lims system")
 
-        proposal_tuple: ProposalTuple = self.app.lims.lims_login(login_id, password)
-        self._debug("_login. proposal_tuple retrieved %s " % proposal_tuple)
+        self._debug(
+            "_login. proposal_tuple retrieved. Sessions=%s "
+            % str(len(proposal_tuple.sessions))
+        )
         inhouse = self.is_inhouse_user(login_id)
 
         active_users = self.active_logged_in_users()
@@ -399,6 +408,7 @@ class UserManager(BaseUserManager):
 
         # Only allow other users to log-in if they are from the same proposal
         # (making sure to exclude inhouse users who are always allowed to login)
+
         if (
             (not inhouse)
             and non_inhouse_active_users

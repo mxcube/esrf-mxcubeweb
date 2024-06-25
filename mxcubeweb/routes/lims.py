@@ -27,9 +27,8 @@ def init_route(app, server, url_prefix):  # noqa: C901
     def proposal_samples():
         try:
             res = jsonify(app.lims.synch_with_lims())
-            print(app.lims.synch_with_lims())
         except Exception as ex:
-            logging.getLogger("MX3.HWR").exception("")
+            logging.getLogger("MX3.HWR").error(str(ex))
             res = (
                 "Could not synchronize with LIMS",
                 409,
@@ -71,8 +70,9 @@ def init_route(app, server, url_prefix):  # noqa: C901
         """
         Set the selected proposal.
         """
-        proposal_number = request.get_json().get("proposal_number", None)
-        app.lims.select_proposal(proposal_number)
+        # proposal_number is the session identifier
+        session_id = request.get_json().get("proposal_number", None)
+        app.lims.select_session(session_id)
 
         return Response(status=200)
 
