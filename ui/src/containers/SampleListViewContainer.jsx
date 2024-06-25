@@ -288,7 +288,7 @@ class SampleListViewContainer extends React.Component {
   }
 
   /**
-   * Synchronises samples with ISPyB
+   * Synchronises samples with LIMS
    *
    * @property {Object} loginData
    */
@@ -758,7 +758,7 @@ class SampleListViewContainer extends React.Component {
                 id="limsSamples"
                 checked={this.getFilterOptionValue('limsSamples')}
                 onChange={this.sampleGridFilter}
-                label="ISPyB Samples"
+                label={`${this.props.loginData.limsName} Samples`}
               />
             </Col>
             <Col xs={3}>
@@ -822,7 +822,7 @@ class SampleListViewContainer extends React.Component {
                 <span style={{ marginLeft: '1.5em' }} />
                 <TooltipTrigger
                   id="sync-samples-tooltip"
-                  tooltipContent="Synchronise sample list with ISPyB"
+                  tooltipContent="Synchronise sample list with {this.props.loginData.limsName}"
                 >
                   <Button
                     className="nowrap-style"
@@ -833,7 +833,7 @@ class SampleListViewContainer extends React.Component {
                       className="fas fa-sync-alt"
                       style={{ marginRight: '0.5em' }}
                     />
-                    ISPyB
+                    {this.props.loginData.limsName}
                   </Button>
                 </TooltipTrigger>
                 <span style={{ marginLeft: '1.5em' }} />

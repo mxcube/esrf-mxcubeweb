@@ -256,11 +256,13 @@ class BaseUserManager(ComponentBase):
             login_type = (
                 "User" if HWR.beamline.lims.is_user_login_type() else "Proposal"
             )
+
             res = {
                 "synchrotronName": HWR.beamline.session.synchrotron_name,
                 "beamlineName": HWR.beamline.session.beamline_name,
                 "loggedIn": True,
                 "loginType": login_type,
+                "limsName": HWR.beamline.lims.get_lims_name(),
                 # "proposalList": proposal_list,
                 "proposalList": [
                     session.__dict__ for session in proposal_tuple.sessions
