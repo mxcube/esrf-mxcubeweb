@@ -95,10 +95,16 @@ def init_route(app, server, url_prefix):
         200: Error, could not log in, {"loggedIn": False}
         """
         try:
+
             res = app.usermanager.login_info()
+
             response = jsonify(res)
             session.permanent = True
-        except:
+        except Exception as e:
+            import traceback
+
+            print(traceback.format_exc())
+            print(e)
             response = make_response(jsonify({"loggedIn": False}), 200)
 
         return response
