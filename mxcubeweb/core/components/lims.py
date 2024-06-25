@@ -304,10 +304,12 @@ class Lims(ComponentBase):
         logging.getLogger("MX3.HWR").debug("select_session session_id=%s" % session_id)
         proposal_tuple = self.get_proposal_info()
 
+        # Selecting the active session in the LIMS object
+        HWR.beamline.lims.set_active_session_by_id(session_id)
+
         if (
-            # HWR.beamline.lims.loginType.lower() == "user" and
-            "Commissioning"
-            in proposal_tuple.proposal.title
+            HWR.beamline.lims.is_user_login_type()
+            and "Commissioning" in proposal_tuple.proposal.title
         ):
             if hasattr(HWR.beamline.session, "set_in_commissioning"):
                 HWR.beamline.session.set_in_commissioning(proposal_tuple)
@@ -316,44 +318,34 @@ class Lims(ComponentBase):
                 )
 
         if proposal_tuple:
+            # todays_session = self.get_todays_session(
+            #        proposal_tuple, create_session=False
+            # )
+            session: Session = HWR.beamline.lims.get_active_session()
+            HWR.beamline.session.proposal_code = session.code
+            HWR.beamline.session.proposal_number = session.number
 
-            if session_id:
-                todays_session = [
-                    obj
-                    for obj in proposal_tuple.sessions
-                    if obj.session_id == session_id
-                ][0]
-                proposal_tuple.todays_session = todays_session
-                HWR.beamline.lims.set_lims_session(todays_session)
-            else:
-                todays_session = self.get_todays_session(
-                    proposal_tuple, create_session=False
-                )
+            logging.getLogger("MX3.HWR").debug("[LIMS] Active session is %s.", session)
 
-            HWR.beamline.session.proposal_code = proposal_tuple.todays_session.code
-            HWR.beamline.session.proposal_number = proposal_tuple.todays_session.number
+            HWR.beamline.session.session_id = session.session_id
+            HWR.beamline.session.proposal_id = session.proposal_id
 
-            logging.getLogger("MX3.HWR").info(
-                "[LIMS] todays_session is %s.", todays_session
-            )
-
-            HWR.beamline.session.session_id = todays_session.session_id
-            HWR.beamline.session.proposal_id = todays_session.proposal_id
-
-            HWR.beamline.session.set_session_start_date(todays_session.start_date)
+            HWR.beamline.session.set_session_start_date(session.start_date)
 
             #  TO BE DONE
 
-            if self.is_rescheduled_session(proposal_tuple.todays_session):
+            if self.is_rescheduled_session(session):
                 logging.getLogger("MX3.HWR").info(
                     "[LIMS] Session is rescheduled in time or beamline."
                 )
-                self.allow_session(proposal_tuple["Session"][0])
+                self.allow_session(session)
 
             if hasattr(HWR.beamline.session, "prepare_directories"):
                 try:
                     logging.getLogger("MX3.HWR").info(
-                        "[LIMS] Creating data directories for proposal %s" % session_id
+                        "[LIMS] Creating data directories for proposal %s%s"
+                        % session.code,
+                        session.number,
                     )
                     HWR.beamline.session.prepare_directories(proposal_tuple)
                 except Exception:
@@ -363,7 +355,7 @@ class Lims(ComponentBase):
 
             # save selected proposal in users db
 
-            current_user.selected_proposal = session_id
+            current_user.selected_proposal = session.session_id
             self.app.usermanager.update_user(current_user)
 
             logging.getLogger("user_log").info(
@@ -419,7 +411,7 @@ class Lims(ComponentBase):
         # session_id is not used, so we can pass None as second argument to
         # 'db_connection.get_samples'
 
-        lims_samples = HWR.beamline.lims.get_samples(proposal_id, None)
+        lims_samples = HWR.beamline.lims.get_samples()
         samples_info_list = lims_samples
 
         for sample_info in samples_info_list:
