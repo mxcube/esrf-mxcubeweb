@@ -242,7 +242,7 @@ class Lims(ComponentBase):
             #    return self.lims_login_by_user(loginID, password)
             # else:
             #    return self.lims_login_by_proposal(loginID, password)
-            logging.getLogger("MX3.HWR").debug("lims_login_by_proposal %s" % (loginID))
+            logging.getLogger("MX3.HWR").debug("lims_login %s" % (loginID))
             proposal_tuple: ProposalTuple = HWR.beamline.lims.login(loginID, password)
             logging.getLogger("MX3.HWR").info(
                 "[LIMS] Logged in, valid proposal: %s" % (proposal_tuple)
@@ -250,7 +250,7 @@ class Lims(ComponentBase):
             return proposal_tuple
         except Exception as e:
             logging.getLogger("MX3.HWR").error(e)
-            raise
+            raise e
 
     def create_lims_session(self, proposal_tuple: ProposalTuple) -> ProposalTuple:
 
@@ -277,10 +277,11 @@ class Lims(ComponentBase):
         Returns true is the session is rescheduled. That means that either currently is not the expected timeslot
         or because it is not in the expected beamline
         """
+
         is_scheduled_beamline = session.is_scheduled_beamline
         is_scheduled_time = session.is_scheduled_time
-        # return not (is_scheduled_beamline and is_scheduled_time)
-        logging.getLogger("MX3.HWR").debug("TBD is_rescheduled_session")
+        return not (is_scheduled_beamline and is_scheduled_time)
+        # logging.getLogger("MX3.HWR").debug("TBD is_rescheduled_session")
 
     def allow_session(self, session):
         HWR.beamline.lims.allow_session(session)
@@ -299,10 +300,8 @@ class Lims(ComponentBase):
 
         return proposal_tuple.todays_session
 
-    def select_proposal(self, proposal_name):
-        logging.getLogger("MX3.HWR").debug(
-            "select_proposal proposal_name=%s" % proposal_name
-        )
+    def select_session(self, session_id):
+        logging.getLogger("MX3.HWR").debug("select_session session_id=%s" % session_id)
         proposal_tuple = self.get_proposal_info()
 
         if (
@@ -317,12 +316,22 @@ class Lims(ComponentBase):
                 )
 
         if proposal_tuple:
-            HWR.beamline.session.proposal_code = proposal_tuple.proposal.code
-            HWR.beamline.session.proposal_number = proposal_tuple.proposal.number
 
-            todays_session = self.get_todays_session(
-                proposal_tuple, create_session=False
-            )
+            if session_id:
+                todays_session = [
+                    obj
+                    for obj in proposal_tuple.sessions
+                    if obj.session_id == session_id
+                ][0]
+                proposal_tuple.todays_session = todays_session
+                HWR.beamline.lims.set_lims_session(todays_session)
+            else:
+                todays_session = self.get_todays_session(
+                    proposal_tuple, create_session=False
+                )
+
+            HWR.beamline.session.proposal_code = proposal_tuple.todays_session.code
+            HWR.beamline.session.proposal_number = proposal_tuple.todays_session.number
 
             logging.getLogger("MX3.HWR").info(
                 "[LIMS] todays_session is %s.", todays_session
@@ -344,8 +353,7 @@ class Lims(ComponentBase):
             if hasattr(HWR.beamline.session, "prepare_directories"):
                 try:
                     logging.getLogger("MX3.HWR").info(
-                        "[LIMS] Creating data directories for proposal %s"
-                        % proposal_name
+                        "[LIMS] Creating data directories for proposal %s" % session_id
                     )
                     HWR.beamline.session.prepare_directories(proposal_tuple)
                 except Exception:
@@ -355,10 +363,12 @@ class Lims(ComponentBase):
 
             # save selected proposal in users db
 
-            current_user.selected_proposal = proposal_name
+            current_user.selected_proposal = session_id
             self.app.usermanager.update_user(current_user)
 
-            logging.getLogger("user_log").info("[LIMS] Proposal selected.")
+            logging.getLogger("user_log").info(
+                "[LIMS] Proposal selected session_id=%s.", session_id
+            )
 
             return True
         else:
@@ -408,6 +418,7 @@ class Lims(ComponentBase):
 
         # session_id is not used, so we can pass None as second argument to
         # 'db_connection.get_samples'
+
         lims_samples = HWR.beamline.lims.get_samples(proposal_id, None)
         samples_info_list = lims_samples
 
