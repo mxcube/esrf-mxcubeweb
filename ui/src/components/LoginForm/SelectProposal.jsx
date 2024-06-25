@@ -30,8 +30,8 @@ class SelectProposal extends React.Component {
   onClickRow(prop) {
     this.setState({
       session: prop,
-      pId: prop.proposalId,
-      pNumber: prop.code + prop.number,
+      pId: prop.session_id,
+      pNumber: prop.session_id, //prop.code + prop.number,
     });
   }
 
@@ -109,12 +109,12 @@ class SelectProposal extends React.Component {
 
     return sessions.map((session) => {
       const variant =
-        this.state.pId === session.proposalId ? 'secondary' : 'light';
+        this.state.pId === session.session_id ? 'secondary' : 'light';
       return (
         <Card
           bg={variant}
           text={variant.toLowerCase() === 'light' ? 'dark' : 'white'}
-          key={session.proposalId}
+          key={session.session_id}
           className="mt-1 p-1"
           onClick={() => this.onClickRow(session)}
         >
@@ -136,16 +136,16 @@ class SelectProposal extends React.Component {
                     >
                       {this.getScheduledDateComponent(
                         session,
-                        session.startDate,
-                        session.startTime,
+                        session.start_date,
+                        session.start_time,
                       )}
                     </ListGroup.Item>
 
                     {session.isRescheduled && (
                       <ListGroup.Item>
                         {this.getDateComponent(
-                          session.actualStartDate,
-                          session.actualStartTime,
+                          session.actual_start_date,
+                          session.actual_start_time,
                         )}
                       </ListGroup.Item>
                     )}
@@ -156,20 +156,20 @@ class SelectProposal extends React.Component {
                   <ListGroup variant="flush">
                     <ListGroup.Item variant="dark">End Date</ListGroup.Item>
                     <ListGroup.Item
-                      variant={session.isScheduledTime ? '' : 'warning'}
+                      variant={session.is_scheduled_time ? '' : 'warning'}
                     >
                       {this.getScheduledDateComponent(
                         session,
-                        session.endDate,
-                        session.endTime,
+                        session.end_date,
+                        session.end_time,
                       )}
                     </ListGroup.Item>
 
                     {session.isRescheduled && (
                       <ListGroup.Item>
                         {this.getDateComponent(
-                          session.actualEndDate,
-                          session.actualEndTime,
+                          session.actual_end_date,
+                          session.actual_end_time,
                         )}
                       </ListGroup.Item>
                     )}
@@ -180,9 +180,9 @@ class SelectProposal extends React.Component {
                     <ListGroup variant="flush">
                       <ListGroup.Item variant="dark">Beamline</ListGroup.Item>
                       <ListGroup.Item
-                        variant={session.isScheduledBeamline ? '' : 'danger'}
+                        variant={session.is_scheduled_beamline ? '' : 'danger'}
                       >
-                        {session.beamlineName}
+                        {session.beamline_name}
                       </ListGroup.Item>
                     </ListGroup>
                   </Col>
@@ -222,7 +222,7 @@ class SelectProposal extends React.Component {
               <div style={{ overflow: 'auto', height: '550px' }}>
                 {this.getSessionTable(
                   sortedlist.filter(
-                    (s) => s.isScheduledBeamline && s.isScheduledTime,
+                    (s) => s.is_scheduled_beamline && s.is_scheduled_time,
                   ),
                   { showBeamline: false },
                 )}
@@ -232,7 +232,7 @@ class SelectProposal extends React.Component {
               <div style={{ overflow: 'auto', height: '550px' }}>
                 {this.getSessionTable(
                   sortedlist.filter(
-                    (s) => !(s.isScheduledBeamline && s.isScheduledTime),
+                    (s) => !(s.is_scheduled_beamline && s.is_scheduled_time),
                   ),
                   { showBeamline: true },
                 )}
