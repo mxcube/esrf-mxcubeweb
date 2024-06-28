@@ -19,6 +19,7 @@ class SelectProposal extends React.Component {
   constructor(props) {
     super(props);
     this.onClickRow = this.onClickRow.bind(this);
+    this.selectProposal = this.selectProposal.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
     this.state = {
       pId: 0,
@@ -38,20 +39,24 @@ class SelectProposal extends React.Component {
   handleCancel() {
     this.props.handleHide();
   }
+  
+  selectProposal() {
+    this.props.selectProposal(this.state.pNumber);
+  }
 
   getClassNameRowColorBySession(session) {
-    if (session.isScheduledBeamline && session.isScheduledTime) {
+    if (session.is_scheduled_beamline && session.is_scheduled_time) {
       return 'white';
     }
     if (
-      session.isRescheduled &&
-      session.isScheduledTime &&
-      session.isScheduledBeamline
+      session.is_rescheduled &&
+      session.is_scheduled_time &&
+      session.is_scheduled_beamline
     ) {
       return 'bg-info';
     }
 
-    if (!session.isScheduledBeamline) {
+    if (!session.is_scheduled_beamline) {
       return 'bg-danger';
     }
 
@@ -68,7 +73,7 @@ class SelectProposal extends React.Component {
   }
 
   getScheduledDateComponent(session, startDate, startTime) {
-    if (session.isRescheduled) {
+    if (session.is_rescheduled) {
       return <del>{this.getDateComponent(startDate, startTime)}</del>;
     }
     return this.getDateComponent(startDate, startTime);
@@ -81,21 +86,19 @@ class SelectProposal extends React.Component {
           <ListGroup.Item variant="dark">Shortcuts</ListGroup.Item>
           <ListGroup.Item>
             {[
-              { title: 'Portal', url: session.dataPortalURL },
-              { title: 'A-Form', url: session.userPortalURL },
-              { title: 'Logbook', url: session.logbookURL },
+              { title: 'Portal', url: session.data_portal_URL },
+              { title: 'A-Form', url: session.user_portal_URL },
+              { title: 'Logbook', url: session.logbook_URL },
             ].map((item) => {
               return (
-                <small key={item.url}>
-                  <a
-                    href={item.url}
-                    className="p-1"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <LuExternalLink /> {item.title}
-                  </a>
-                </small>
+                <a
+                  href={item.url}
+                  className="p-1"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <LuExternalLink /> {item.title}
+                </a>
               );
             })}
           </ListGroup.Item>
@@ -110,6 +113,7 @@ class SelectProposal extends React.Component {
     return sessions.map((session) => {
       const variant =
         this.state.pId === session.session_id ? 'secondary' : 'light';
+
       return (
         <Card
           bg={variant}
@@ -132,7 +136,7 @@ class SelectProposal extends React.Component {
                   <ListGroup variant="flush">
                     <ListGroup.Item variant="dark"> Start Date</ListGroup.Item>
                     <ListGroup.Item
-                      variant={session.isScheduledTime ? '' : 'warning'}
+                      variant={session.is_scheduled_time ? '' : 'warning'}
                     >
                       {this.getScheduledDateComponent(
                         session,
@@ -141,7 +145,7 @@ class SelectProposal extends React.Component {
                       )}
                     </ListGroup.Item>
 
-                    {session.isRescheduled && (
+                    {session.is_rescheduled && (
                       <ListGroup.Item>
                         {this.getDateComponent(
                           session.actual_start_date,
@@ -165,7 +169,7 @@ class SelectProposal extends React.Component {
                       )}
                     </ListGroup.Item>
 
-                    {session.isRescheduled && (
+                    {session.is_rescheduled && (
                       <ListGroup.Item>
                         {this.getDateComponent(
                           session.actual_end_date,
@@ -191,7 +195,7 @@ class SelectProposal extends React.Component {
                 {this.getLinkBySession(session)}
               </Row>
             </Container>
-            {session.isRescheduled && (
+            {session.is_rescheduled && (
               <Card.Footer>
                 <p className="text-info">Session has been rescheduled</p>
               </Card.Footer>
@@ -206,7 +210,7 @@ class SelectProposal extends React.Component {
     const sortedlist = this.props.data.proposalList.sort((a, b) =>
       a.number < b.number ? 1 : -1,
     );
-
+    const session = this.state.session;
     return (
       <Modal
         show={this.props.show}
@@ -219,7 +223,7 @@ class SelectProposal extends React.Component {
         <Modal.Body>
           <Tabs defaultActiveKey="scheduled" id="scheduled-tab">
             <Tab eventKey="scheduled" title="Scheduled">
-              <div style={{ overflow: 'auto', height: '550px' }}>
+              <div style={{ overflow: 'auto', height: '550px', padding: 10 }}>
                 {this.getSessionTable(
                   sortedlist.filter(
                     (s) => s.is_scheduled_beamline && s.is_scheduled_time,
@@ -241,29 +245,28 @@ class SelectProposal extends React.Component {
           </Tabs>
         </Modal.Body>
         <Modal.Footer>
-          {this.state.session &&
-            this.state.session.isScheduledBeamline === true &&
-            this.state.session.isScheduledTime === false && (
+          {session &&
+            session.is_scheduled_beamline === true &&
+            session.is_scheduled_time === false && (
               <Button
                 variant="warning"
                 className="float-end"
                 disabled={this.state.pNumber === null}
-                onClick={this.sendProposal}
+                onClick={this.selectProposal}
               >
                 Reschedule
               </Button>
             )}
-          {this.state.session &&
-            this.state.session.isScheduledBeamline === false && (
-              <Button
-                variant="danger"
-                className="float-end"
-                disabled // {this.state.pNumber === null}
-                onClick={this.sendProposal}
-              >
-                Move here
-              </Button>
-            )}
+          {session && session.is_scheduled_beamline === false && (
+            <Button
+              variant="danger"
+              className="float-end"
+              disabled // {this.state.pNumber === null}
+              onClick={this.selectProposal}
+            >
+              Move here
+            </Button>
+          )}
           <Button variant="outline-secondary" onClick={this.handleCancel}>
             Cancel
           </Button>
@@ -272,11 +275,10 @@ class SelectProposal extends React.Component {
             className="float-end"
             disabled={
               this.state.pNumber === null ||
-              (this.state.session &&
-                this.state.session.isScheduledBeamline === false) ||
-              this.state.session.isScheduledTime === false
+              (session && session.is_scheduled_beamline === false) ||
+              session.is_scheduled_time === false
             }
-            onClick={this.sendProposal}
+            onClick={this.selectProposal}
           >
             Select Proposal
           </Button>
