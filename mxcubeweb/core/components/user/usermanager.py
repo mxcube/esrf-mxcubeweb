@@ -370,13 +370,14 @@ class UserManager(BaseUserManager):
         super().__init__(app, config)
 
     def _debug(self, msg: str):
-        logging.getLogger("HWR").info(msg)
+        logging.getLogger("HWR").debug(msg)
 
     def _login(self, login_id: str, password: str) -> ProposalTuple:
-
         self._debug("_login. login_id=%s" % login_id)
         try:
-            proposal_tuple: ProposalTuple = self.app.lims.lims_login(login_id, password)
+            proposal_tuple: ProposalTuple = self.app.lims.lims_login(
+                login_id, password, is_local_host()
+            )
         except Exception as e:
             logging.getLogger("MX3.HWR").error(e)
             raise Exception("Failed to log in the lims system")
@@ -431,7 +432,7 @@ class UserManager(BaseUserManager):
         # Only allow local login when remote is disabled
         if not self.app.ALLOW_REMOTE and not is_local_host():
             raise Exception("Remote access disabled")
-
+        """
         # Only allow remote logins with existing sessions
         if self.app.lims.lims_valid_login(proposal_tuple) and is_local_host():
             if not self.app.lims.lims_existing_session(proposal_tuple):
@@ -448,7 +449,7 @@ class UserManager(BaseUserManager):
         else:
             logging.getLogger("MX3.HWR").info("Invalid login")
             raise Exception("Invalid login")
-
+        """
         return proposal_tuple
 
     def _signout(self):
