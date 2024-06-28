@@ -168,12 +168,6 @@ class Lims(ComponentBase):
 
         return prefix
 
-    def lims_existing_session(self, proposal_tuple: ProposalTuple) -> bool:
-        return proposal_tuple.todays_session != None
-
-    def lims_valid_login(self, login_res: ProposalTuple):
-        return login_res.status.code == "ok"
-
     def lims_login(self, loginID, password, is_local_host):
         try:
             logging.getLogger("MX3.HWR").debug("lims_login %s" % (loginID))
@@ -196,35 +190,26 @@ class Lims(ComponentBase):
         Returns true is the session is rescheduled. That means that either currently is not the expected timeslot
         or because it is not in the expected beamline
         """
-
         is_scheduled_beamline = session.is_scheduled_beamline
         is_scheduled_time = session.is_scheduled_time
         return not (is_scheduled_beamline and is_scheduled_time)
-        # logging.getLogger("MX3.HWR").debug("TBD is_rescheduled_session")
 
     def allow_session(self, session):
         HWR.beamline.lims.allow_session(session)
-
-    def get_todays_session(
-        self, proposal_tuple: ProposalTuple, create_session: bool
-    ) -> Session:
-        logging.getLogger("MX3.HWR").info(
-            "[LIMS] get_todays_session create_session=%s." % create_session
-        )
-        if proposal_tuple.todays_session:
-            return proposal_tuple.todays_session
-
-        if create_session:
-            proposal_tuple = HWR.beamline.lims.create_session(proposal_tuple)
-
-        return proposal_tuple.todays_session
 
     def select_session(self, session_id):
         logging.getLogger("MX3.HWR").debug("select_session session_id=%s" % session_id)
         proposal_tuple = self.get_proposal_info()
 
         # Selecting the active session in the LIMS object
-        HWR.beamline.lims.set_active_session_by_id(session_id)
+        try:
+            HWR.beamline.lims.set_active_session_by_id(session_id)
+        except BaseException as e:
+            logging.getLogger("MX3.HWR").info(
+                "No session candidate. Force signout. e=%s" % str(e)
+            )
+            self.app.usermanager.signout()
+            return False
 
         if (
             HWR.beamline.lims.is_user_login_type()
@@ -237,9 +222,6 @@ class Lims(ComponentBase):
                 )
 
         if proposal_tuple:
-            # todays_session = self.get_todays_session(
-            #        proposal_tuple, create_session=False
-            # )
             session: Session = HWR.beamline.lims.get_active_session()
             HWR.beamline.session.proposal_code = session.code
             HWR.beamline.session.proposal_number = session.number
@@ -250,8 +232,6 @@ class Lims(ComponentBase):
             HWR.beamline.session.proposal_id = session.proposal_id
 
             HWR.beamline.session.set_session_start_date(session.start_date)
-
-            #  TO BE DONE
 
             if self.is_rescheduled_session(session):
                 logging.getLogger("MX3.HWR").info(
