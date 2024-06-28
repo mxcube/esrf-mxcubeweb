@@ -111,7 +111,7 @@ function MXNavbar() {
               Sign out
               <span className={styles.parens}>
                 {' '}
-                ({isUserLogin ? username : selectedProposal})
+                ({isUserLogin ? username : username})
               </span>
             </button>
           </Nav>
