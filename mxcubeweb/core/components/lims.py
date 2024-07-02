@@ -276,24 +276,6 @@ class Lims(ComponentBase):
 
         return link
 
-    def get_dc_thumbnail(self, image_id):
-        fname, data = HWR.beamline.lims.get_dc_thumbnail(image_id)
-        data = io.BytesIO(data)
-
-        return fname, data
-
-    def get_dc_image(self, image_id):
-        fname, data = HWR.beamline.lims.get_dc_image(image_id)
-        data = io.BytesIO(data)
-
-        return fname, data
-
-    def get_quality_indicator_plot(self, dc_id):
-        data = HWR.beamline.lims.get_quality_indicator_plot(dc_id)
-        data = io.BytesIO(data)
-
-        return "qind", data
-
     def synch_with_lims(self):
 
         # session_id is not used, so we can pass None as second argument to
