@@ -11,7 +11,7 @@ from flask_login import current_user
 # from authlib.oauth2.rfc6749 import OAuth2Token
 from authlib.integrations.flask_client import OAuth
 
-from mxcubecore.model.lims_session import ProposalTuple
+from mxcubecore.model.lims_session import LimsSessionManager
 from mxcubeweb.core.components.component_base import ComponentBase
 from mxcubeweb.core.models.usermodels import User
 from mxcubeweb.core.util.networkutils import is_local_host, remote_addr
@@ -133,7 +133,9 @@ class BaseUserManager(ComponentBase):
         # in control
         if not active_in_control:
             if not HWR.beamline.lims.is_user_login_type():
-                current_user.nickname = self.app.lims.get_proposal(current_user)
+                # current_user.nickname = self.app.lims.get_proposal(current_user)
+
+                current_user.nickname = HWR.beamline.lims.get_user_name()
             else:
                 current_user.nickname = current_user.username
 
@@ -143,7 +145,10 @@ class BaseUserManager(ComponentBase):
         for _u in User.query.all():
             if _u.is_authenticated and _u.in_control:
                 if not HWR.beamline.lims.is_user_login_type():
-                    self.app.lims.select_session(self.app.lims.get_proposal(_u))
+                    # In principle there is no need for doing so..
+                    self.app.lims.select_session(
+                        self.app.lims.get_proposal_info().active_session.proposal_name
+                    )  # The username is the proposal
                 elif _u.selected_proposal is not None:
                     self.app.lims.select_session(_u.selected_proposal)
 
@@ -156,7 +161,7 @@ class BaseUserManager(ComponentBase):
         return user_id in user_id_list
 
     # Abstract method to be implemented by concrete implementation
-    def _login(self, login_id, password) -> ProposalTuple:
+    def _login(self, login_id, password) -> LimsSessionManager:
         pass
 
     def sso_validate(self) -> str:
@@ -171,7 +176,7 @@ class BaseUserManager(ComponentBase):
 
     def login(self, login_id: str, password: str, sso_data: dict = {}):
         try:
-            proposal_tuple: ProposalTuple = self._login(login_id, password)
+            sessionManager: LimsSessionManager = self._login(login_id, password)
         except Exception as e:
             logging.getLogger("MX3.HWR").error(str(e))
             raise
@@ -183,7 +188,7 @@ class BaseUserManager(ComponentBase):
             # before calling login
             self.update_active_users()
 
-            user = self.db_create_user(login_id, password, proposal_tuple, sso_data)
+            user = self.db_create_user(login_id, password, sessionManager, sso_data)
             self.app.server.user_datastore.activate_user(user)
             flask_security.login_user(user, remember=False)
 
@@ -247,7 +252,7 @@ class BaseUserManager(ComponentBase):
 
     def login_info(self):
         if not current_user.is_anonymous:
-            proposal_tuple: ProposalTuple = self.app.lims.get_proposal_info()
+            proposal_tuple: LimsSessionManager = self.app.lims.get_proposal_info()
             self.update_operator()
             # proposal_list = []
             # for prop in login_info.get("proposalList", []):
@@ -302,7 +307,7 @@ class BaseUserManager(ComponentBase):
         return list(roles)
 
     def db_create_user(
-        self, user: str, password: str, lims_data: ProposalTuple, sso_data: dict
+        self, user: str, password: str, lims_data: LimsSessionManager, sso_data: dict
     ):
         sid = flask.session["sid"]
         user_datastore = self.app.server.user_datastore
@@ -372,10 +377,10 @@ class UserManager(BaseUserManager):
     def _debug(self, msg: str):
         logging.getLogger("HWR").debug(msg)
 
-    def _login(self, login_id: str, password: str) -> ProposalTuple:
+    def _login(self, login_id: str, password: str) -> LimsSessionManager:
         self._debug("_login. login_id=%s" % login_id)
         try:
-            proposal_tuple: ProposalTuple = self.app.lims.lims_login(
+            session_manager: LimsSessionManager = self.app.lims.lims_login(
                 login_id, password, is_local_host()
             )
         except Exception as e:
@@ -384,7 +389,7 @@ class UserManager(BaseUserManager):
 
         self._debug(
             "_login. proposal_tuple retrieved. Sessions=%s "
-            % str(len(proposal_tuple.sessions))
+            % str(len(session_manager.sessions))
         )
         inhouse = self.is_inhouse_user(login_id)
 
@@ -450,7 +455,7 @@ class UserManager(BaseUserManager):
             logging.getLogger("MX3.HWR").info("Invalid login")
             raise Exception("Invalid login")
         """
-        return proposal_tuple
+        return session_manager
 
     def _signout(self):
         requests.post(
