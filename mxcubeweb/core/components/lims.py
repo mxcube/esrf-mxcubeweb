@@ -168,15 +168,7 @@ class Lims(ComponentBase):
 
         return prefix
 
-    def lims_login(self, loginID, password, is_local_host):
-        try:
-            logging.getLogger("MX3.HWR").debug("lims_login %s" % (loginID))
-            return HWR.beamline.lims.login(loginID, password, is_local_host)
-        except Exception as e:
-            logging.getLogger("MX3.HWR").error(e)
-            raise e
-
-    def get_proposal_info(self) -> LimsSessionManager:
+    def get_session_manager(self) -> LimsSessionManager:
         return LimsSessionManager.parse_obj(json.loads(current_user.limsdata))
 
     def is_rescheduled_session(self, session):
@@ -270,11 +262,6 @@ class Lims(ComponentBase):
 
     def get_default_subdir(self, sample_data):
         return HWR.beamline.session.get_default_subdir(sample_data)
-
-    def get_dc_link(self, col_id):
-        link = HWR.beamline.lims.dc_link(col_id)
-
-        return link
 
     def synch_with_lims(self):
 
