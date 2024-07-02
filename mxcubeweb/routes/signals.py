@@ -252,17 +252,17 @@ def get_task_state(entry):
     node_index = mxcube.queue.node_index(entry.get_data_model())
     lims_id = mxcube.NODE_ID_TO_LIMS_ID.get(node_id, "null")
 
-    try:
-        limsres = HWR.beamline.lims.get_dc(lims_id)
-    except Exception:
-        limsres = {}
+    # try:
+    #     limsres = HWR.beamline.lims.get_dc(lims_id)
+    # except Exception:
+    #     limsres = {}
 
-    try:
-        limsres["limsTaskLink"] = mxcube.lims.get_dc_link(lims_id)
-    except Exception:
-        limsres["limsTaskLink"] = "#"
-        msg = "Could not get lims link for collection with id: %s" % lims_id
-        logging.getLogger("HWR").error(msg)
+    # try:
+    #     limsres["limsTaskLink"] = mxcube.lims.get_dc_link(lims_id)
+    # except Exception:
+    #     limsres["limsTaskLink"] = "#"
+    #     msg = "Could not get lims link for collection with id: %s" % lims_id
+    #     logging.getLogger("HWR").error(msg)
 
     msg = {
         "Signal": "",
@@ -270,7 +270,7 @@ def get_task_state(entry):
         "taskIndex": node_index["idx"],
         "queueID": node_id,
         "sample": node_index["sample"],
-        "limsResultData": limsres,
+        #"limsResultData": limsres,
         "state": state,
         "progress": 1 if state == COLLECTED else 0,
     }
@@ -288,17 +288,17 @@ def update_task_result(entry):
     except Exception:
         limsres = {}
 
-    try:
-        limsres["limsTaskLink"] = mxcube.lims.get_dc_link(lims_id)
-    except Exception:
-        limsres["limsTaskLink"] = "#"
-        msg = "Could not get lims link for collection with id: %s" % lims_id
-        logging.getLogger("HWR").error(msg)
+    # try:
+    #     limsres["limsTaskLink"] = mxcube.lims.get_dc_link(lims_id)
+    # except Exception:
+    #     limsres["limsTaskLink"] = "#"
+    #     msg = "Could not get lims link for collection with id: %s" % lims_id
+    #     logging.getLogger("HWR").error(msg)
 
     msg = {
         "sample": node_index["sample"],
         "taskIndex": node_index["idx"],
-        "limsResultData": limsres,
+        #"limsResultData": limsres,
     }
 
     server.emit("update_task_lims_data", msg, namespace="/hwr")
