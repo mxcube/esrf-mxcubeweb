@@ -147,7 +147,7 @@ class BaseUserManager(ComponentBase):
                 if not HWR.beamline.lims.is_user_login_type():
                     # In principle there is no need for doing so..
                     self.app.lims.select_session(
-                        self.app.lims.get_proposal_info().active_session.proposal_name
+                        self.app.lims.get_session_manager().active_session.proposal_name
                     )  # The username is the proposal
                 elif _u.selected_proposal is not None:
                     self.app.lims.select_session(_u.selected_proposal)
@@ -252,12 +252,9 @@ class BaseUserManager(ComponentBase):
 
     def login_info(self):
         if not current_user.is_anonymous:
-            proposal_tuple: LimsSessionManager = self.app.lims.get_proposal_info()
+            proposal_tuple: LimsSessionManager = self.app.lims.get_session_manager()
             self.update_operator()
-            # proposal_list = []
-            # for prop in login_info.get("proposalList", []):
-            #    session = prop["Session"][0]
-            #    proposal_list.append(session)
+
             login_type = (
                 "User" if HWR.beamline.lims.is_user_login_type() else "Proposal"
             )
@@ -380,7 +377,7 @@ class UserManager(BaseUserManager):
     def _login(self, login_id: str, password: str) -> LimsSessionManager:
         self._debug("_login. login_id=%s" % login_id)
         try:
-            session_manager: LimsSessionManager = self.app.lims.lims_login(
+            session_manager: LimsSessionManager = HWR.beamline.lims.login(
                 login_id, password, is_local_host()
             )
         except Exception as e:
