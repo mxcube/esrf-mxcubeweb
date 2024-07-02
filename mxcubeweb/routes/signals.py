@@ -270,7 +270,7 @@ def get_task_state(entry):
         "taskIndex": node_index["idx"],
         "queueID": node_id,
         "sample": node_index["sample"],
-        #"limsResultData": limsres,
+        # "limsResultData": limsres,
         "state": state,
         "progress": 1 if state == COLLECTED else 0,
     }
@@ -298,7 +298,7 @@ def update_task_result(entry):
     msg = {
         "sample": node_index["sample"],
         "taskIndex": node_index["idx"],
-        #"limsResultData": limsres,
+        # "limsResultData": limsres,
     }
 
     server.emit("update_task_lims_data", msg, namespace="/hwr")
