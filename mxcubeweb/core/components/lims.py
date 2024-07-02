@@ -210,13 +210,11 @@ class Lims(ComponentBase):
 
         HWR.beamline.session.proposal_code = session.code
         HWR.beamline.session.proposal_number = session.number
-
-        logging.getLogger("MX3.HWR").debug("[LIMS] Active session is %s.", session)
-
         HWR.beamline.session.session_id = session.session_id
         HWR.beamline.session.proposal_id = session.proposal_id
-
         HWR.beamline.session.set_session_start_date(session.start_date)
+
+        logging.getLogger("MX3.HWR").debug("[LIMS] Active session is %s.", session)
 
         if self.is_rescheduled_session(session):
             logging.getLogger("MX3.HWR").info(
@@ -230,7 +228,8 @@ class Lims(ComponentBase):
                     "[LIMS] Creating data directories for proposal %s%s" % session.code,
                     session.number,
                 )
-                HWR.beamline.session.prepare_directories(proposal_tuple)
+                raise "To be implemented for those using prepare_directories"
+                # HWR.beamline.session.prepare_directories(proposal_tuple)
             except Exception:
                 logging.getLogger("MX3.HWR").info(
                     "[LIMS] Error creating data directories, %s" % sys.exc_info()[1]
