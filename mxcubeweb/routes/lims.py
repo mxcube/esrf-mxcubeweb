@@ -40,30 +40,6 @@ def init_route(app, server, url_prefix):  # noqa: C901
 
         return res
 
-    @bp.route("/dc/thumbnail/<image_id>", methods=["GET"])
-    @server.restrict
-    def get_dc_thumbnail(image_id):
-        fname, data = app.lims.get_dc_thumbnail(image_id)
-        return send_file(data, attachment_filename=fname, as_attachment=True)
-
-    @bp.route("/dc/image/<image_id>", methods=["GET"])
-    @server.restrict
-    def get_dc_image(image_id):
-        fname, data = app.lims.get_dc_image(image_id)
-        return send_file(data, attachment_filename=fname, as_attachment=True)
-
-    @bp.route("/quality_indicator_plot/<dc_id>", methods=["GET"])
-    @server.restrict
-    def get_quality_indicator_plot(dc_id):
-        fname, data = app.lims.get_quality_indicator_plot(dc_id)
-        return send_file(data, attachment_filename=fname, as_attachment=True)
-
-    @bp.route("/dc/<dc_id>", methods=["GET"])
-    @server.restrict
-    def get_dc(dc_id):
-        data = HWR.beamline.lims.get_dc(dc_id)
-        return jsonify(data)
-
     @bp.route("/proposal", methods=["POST"])
     @server.restrict
     def set_proposal():
