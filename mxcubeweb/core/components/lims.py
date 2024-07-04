@@ -191,10 +191,13 @@ class Lims(ComponentBase):
         # Selecting the active session in the LIMS object
         try:
             HWR.beamline.lims.set_active_session_by_id(session_id)
-            session: Session = HWR.beamline.lims.get_active_session()
+            session: Session = HWR.beamline.lims.set_active_session_by_id(session_id)
             if session is None:
                 raise "No session selected on LIMS"
         except BaseException as e:
+            import traceback
+
+            traceback.print_exc(file=sys.stdout)
             logging.getLogger("MX3.HWR").info(
                 "No session candidate. Force signout. e=%s" % str(e)
             )
@@ -210,11 +213,15 @@ class Lims(ComponentBase):
 
         HWR.beamline.session.proposal_code = session.code
         HWR.beamline.session.proposal_number = session.number
-        HWR.beamline.session.session_id = session.session_id
+        HWR.beamline.session.session_id = HWR.beamline.lims.get_session_id()
         HWR.beamline.session.proposal_id = session.proposal_id
         HWR.beamline.session.set_session_start_date(session.start_date)
 
-        logging.getLogger("MX3.HWR").debug("[LIMS] Active session is %s.", session)
+        logging.getLogger("MX3.HWR").debug(
+            "[LIMS] Active session. proposal=%s session_id=%s.",
+            session.proposal_name,
+            session.session_id,
+        )
 
         if self.is_rescheduled_session(session):
             logging.getLogger("MX3.HWR").info(
@@ -262,12 +269,12 @@ class Lims(ComponentBase):
     def get_default_subdir(self, sample_data):
         return HWR.beamline.session.get_default_subdir(sample_data)
 
-    def synch_with_lims(self):
+    def synch_with_lims(self, lims_name):
 
         # session_id is not used, so we can pass None as second argument to
         # 'db_connection.get_samples'
 
-        samples_info_list = HWR.beamline.lims.get_samples()
+        samples_info_list = HWR.beamline.lims.get_samples(lims_name)
         for sample_info in samples_info_list:
             sample_info["limsID"] = sample_info.pop("sampleId")
             sample_info["defaultPrefix"] = self.get_default_prefix(sample_info)

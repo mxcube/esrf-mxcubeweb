@@ -295,12 +295,12 @@ class SampleListViewContainer extends React.Component {
    *
    * @property {Object} loginData
    */
-  async syncSamples() {
+  async syncSamples(lims) {
     if (Object.keys(this.props.sampleList).length === 0) {
       await this.getSamplesFromSC();
-      this.props.syncSamples();
+      this.props.syncSamples(lims);
     } else {
-      this.props.syncSamples();
+      this.props.syncSamples(lims);
     }
     this.props.filter({ limsSamples: true });
   }
@@ -626,6 +626,61 @@ class SampleListViewContainer extends React.Component {
     this.props.showConfirmCollectDialog();
   }
 
+  getSynchronizationDropDownList() {
+    if (this.props.loginData.limsName.length == 1) {
+      return (
+        <OverlayTrigger
+          placement="bottom"
+          overlay={
+            <Tooltip id="select-samples">
+              Synchronise sample list with{' '}
+              {this.props.loginData.limsName[0].name}
+            </Tooltip>
+          }
+        >
+          <Button
+            className="nowrap-style"
+            variant="outline-secondary"
+            onClick={() =>
+              this.syncSamples(this.props.loginData.limsName[0].name)
+            }
+          >
+            <i className="fas fa-sync-alt" style={{ marginRight: '0.5em' }} />
+            {this.props.loginData.limsName[0].name}
+          </Button>
+        </OverlayTrigger>
+      );
+    }
+    return (
+      <Dropdown>
+        <Dropdown.Toggle variant="outline-secondary" id="dropdown-lims">
+          <i className="fas fa-sync-alt" style={{ marginRight: '0.5em' }} />{' '}
+          Synchronize with
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          {this.props.loginData.limsName.map((lims) => (
+            <OverlayTrigger
+              placement="bottom"
+              overlay={
+                <Tooltip id="select-samples">
+                  Synchronise sample list with{' '}
+                  {this.props.loginData.limsName[0].name}
+                </Tooltip>
+              }
+            >
+              <Dropdown.Item
+                key={lims.name}
+                onClick={() => this.syncSamples(lims.name)}
+              >
+                {lims.name}
+              </Dropdown.Item>
+            </OverlayTrigger>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
   /**
    * Collect button markup
    */
@@ -761,7 +816,7 @@ class SampleListViewContainer extends React.Component {
                 id="limsSamples"
                 checked={this.getFilterOptionValue('limsSamples')}
                 onChange={this.sampleGridFilter}
-                label={`${this.props.loginData.limsName} Samples`}
+                label={`LIMS Samples`}
               />
             </Col>
             <Col xs={3}>
@@ -831,27 +886,9 @@ class SampleListViewContainer extends React.Component {
                   </Dropdown.Item>
                 </SplitButton>
                 <span style={{ marginLeft: '1.5em' }} />
-                <OverlayTrigger
-                  placement="bottom"
-                  overlay={
-                    <Tooltip id="select-samples">
-                      Synchronise sample list with{' '}
-                      {this.props.loginData.limsName}
-                    </Tooltip>
-                  }
-                >
-                  <Button
-                    className="nowrap-style"
-                    variant="outline-secondary"
-                    onClick={this.syncSamples}
-                  >
-                    <i
-                      className="fas fa-sync-alt"
-                      style={{ marginRight: '0.5em' }}
-                    />
-                    {this.props.loginData.limsName}
-                  </Button>
-                </OverlayTrigger>
+
+                {this.getSynchronizationDropDownList()}
+
                 <span style={{ marginLeft: '1.5em' }} />
                 <OverlayTrigger
                   placement="bottom"
@@ -1006,7 +1043,7 @@ function mapDispatchToProps(dispatch) {
     getSamplesList: () => dispatch(getSamplesList()),
     setViewMode: (mode) => dispatch(setViewModeAction(mode)),
     filter: (filterOptions) => dispatch(filterAction(filterOptions)),
-    syncSamples: () => dispatch(syncSamples()),
+    syncSamples: (lims) => dispatch(syncSamples(lims)),
     syncSamplesCrims: () => dispatch(syncWithCrims()),
     showTaskParametersForm: bindActionCreators(showTaskForm, dispatch),
     selectSamples: (keys, selected) =>
