@@ -291,12 +291,12 @@ class SampleListViewContainer extends React.Component {
    *
    * @property {Object} loginData
    */
-  async syncSamples() {
+  async syncSamples(lims) {
     if (Object.keys(this.props.sampleList).length === 0) {
       await this.getSamplesFromSC();
-      this.props.syncSamples();
+      this.props.syncSamples(lims);
     } else {
-      this.props.syncSamples();
+      this.props.syncSamples(lims);
     }
     this.props.filter({ limsSamples: true });
   }
@@ -620,6 +620,51 @@ class SampleListViewContainer extends React.Component {
   startCollect() {
     this.props.navigate('/datacollection', { replace: true });
     this.props.showConfirmCollectDialog();
+  }
+
+  getSynchronizationDropDownList() {
+    if (this.props.loginData.limsName.length == 1) {
+      return (
+        <TooltipTrigger
+          id="sync-samples-tooltip"
+          tooltipContent={`Synchronise sample list with ${this.props.loginData.limsName}`}
+        >
+          <Button
+            className="nowrap-style"
+            variant="outline-secondary"
+            onClick={this.syncSamples}
+          >
+            <i
+              className="fas fa-sync-alt"
+              style={{ marginRight: '0.5em' }}
+            />
+            {this.props.loginData.limsName}
+          </Button>
+        </TooltipTrigger>
+      );
+    }
+    return (
+      <Dropdown>
+        <Dropdown.Toggle variant="outline-secondary" id="dropdown-lims">
+          <i className="fas fa-sync-alt" style={{ marginRight: '0.5em' }} />{' '}
+          Synchronize with
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          {this.props.loginData.limsName.map((lims) => (
+            <TooltipTrigger
+              tooltipContent={`Synchronise sample list with ${this.props.loginData.limsName[0].name}`}
+            >
+              <Dropdown.Item
+                key={lims.name}
+                onClick={() => this.syncSamples(lims.name)}
+              >
+                {lims.name}
+              </Dropdown.Item>
+            </TooltipTrigger>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+    );
   }
 
   /**
@@ -977,7 +1022,7 @@ function mapDispatchToProps(dispatch) {
     getSamplesList: () => dispatch(getSamplesList()),
     setViewMode: (mode) => dispatch(setViewModeAction(mode)),
     filter: (filterOptions) => dispatch(filterAction(filterOptions)),
-    syncSamples: () => dispatch(syncSamples()),
+    syncSamples: (lims) => dispatch(syncSamples(lims)),
     syncSamplesCrims: () => dispatch(syncWithCrims()),
     showTaskParametersForm: bindActionCreators(showTaskForm, dispatch),
     selectSamples: (keys, selected) =>
