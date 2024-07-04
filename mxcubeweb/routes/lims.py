@@ -26,7 +26,8 @@ def init_route(app, server, url_prefix):  # noqa: C901
     @server.restrict
     def proposal_samples():
         try:
-            res = jsonify(app.lims.synch_with_lims())
+            lims_name = request.args.get("limsname")
+            res = jsonify(app.lims.synch_with_lims(lims_name))
         except Exception as ex:
             logging.getLogger("MX3.HWR").error(str(ex))
             res = (

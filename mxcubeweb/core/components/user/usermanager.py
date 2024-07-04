@@ -252,7 +252,7 @@ class BaseUserManager(ComponentBase):
 
     def login_info(self):
         if not current_user.is_anonymous:
-            proposal_tuple: LimsSessionManager = self.app.lims.get_session_manager()
+            session_manager: LimsSessionManager = self.app.lims.get_session_manager()
             self.update_operator()
 
             login_type = (
@@ -264,10 +264,9 @@ class BaseUserManager(ComponentBase):
                 "beamlineName": HWR.beamline.session.beamline_name,
                 "loggedIn": True,
                 "loginType": login_type,
-                "limsName": HWR.beamline.lims.get_lims_name(),
-                # "proposalList": proposal_list,
+                "limsName": [item.dict() for item in HWR.beamline.lims.get_lims_name()],
                 "proposalList": [
-                    session.__dict__ for session in proposal_tuple.sessions
+                    session.__dict__ for session in session_manager.sessions
                 ],
                 "rootPath": HWR.beamline.session.get_base_image_directory(),
                 "user": current_user.todict(),
@@ -280,8 +279,9 @@ class BaseUserManager(ComponentBase):
 
             res["selectedProposalID"] = HWR.beamline.session.proposal_id
         else:
-            logging.getLogger("MX3.HWR").error("Error not logged in")
-            raise Exception("Not logged in")
+            logging.getLogger("MX3.HWR").warning("Logged out")
+            raise Exception("Logged out")
+
         return res
 
     def update_user(self, user):
