@@ -101,10 +101,6 @@ def init_route(app, server, url_prefix):
             response = jsonify(res)
             session.permanent = True
         except Exception as e:
-            import traceback
-
-            print(traceback.format_exc())
-            print(e)
             response = make_response(jsonify({"loggedIn": False}), 200)
 
         return response
