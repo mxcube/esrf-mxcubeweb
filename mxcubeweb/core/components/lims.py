@@ -127,6 +127,10 @@ class Lims(ComponentBase):
             if params["subdir"].endswith("-"):
                 params["subdir"] = sample_model.get_name()
 
+        # Making sure that there are no ":" left from the sample name incase
+        # no synchronisation with LIMS was done
+        params["subdir"] = params["subdir"].replace(":", "-")
+
         if "{" in params.get("prefix", ""):
             sample = self.app.SAMPLE_LIST["sampleList"].get(sample_model.loc_str, {})
             prefix = self.get_default_prefix(sample)
