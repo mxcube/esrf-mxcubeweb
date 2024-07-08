@@ -276,7 +276,6 @@ class BaseUserManager(ComponentBase):
                 HWR.beamline.session.proposal_code,
                 HWR.beamline.session.proposal_number,
             )
-
             res["selectedProposalID"] = HWR.beamline.session.proposal_id
         else:
             logging.getLogger("MX3.HWR").warning("Logged out")
@@ -381,6 +380,7 @@ class UserManager(BaseUserManager):
                 login_id, password, is_local_host()
             )
         except Exception as e:
+            print(e)
             logging.getLogger("MX3.HWR").error(e)
             raise Exception("Failed to log in the lims system")
 
