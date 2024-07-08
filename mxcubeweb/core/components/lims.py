@@ -217,8 +217,8 @@ class Lims(ComponentBase):
         HWR.beamline.session.proposal_id = session.proposal_id
         HWR.beamline.session.set_session_start_date(session.start_date)
 
-        logging.getLogger("MX3.HWR").debug(
-            "[LIMS] Active session. proposal=%s session_id=%s.",
+        logging.getLogger("MX3.HWR").info(
+            "[LIMS] Selected session. proposal=%s session_id=%s.",
             session.proposal_name,
             session.session_id,
         )
