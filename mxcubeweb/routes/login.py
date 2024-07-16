@@ -34,13 +34,19 @@ def init_route(app, server, url_prefix):
         password = params.get("password", "")
 
         try:
+
             app.usermanager.login(login_id, password)
-        except Exception as ex:
+        except BaseException as ex:
             msg = "[LOGIN] User %s could not login" % login_id
-            logging.getLogger("MX3.HWR").info(msg)
-            logging.getLogger("MX3.HWR").exception("")
+            logging.getLogger("MX3.HWR").warning(msg)
             res = make_response(
-                jsonify({"msg": f"Could not authenticate: {str(ex)}"}), 200
+                jsonify(
+                    {
+                        "msg": "Authentication failed",
+                        "description": f"{str(ex)}",
+                    }
+                ),
+                200,
             )
         else:
             res = make_response(jsonify({"msg": ""}), 200)
