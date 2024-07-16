@@ -169,17 +169,17 @@ class BaseUserManager(ComponentBase):
             token_response = self.oauth_client.keycloak.authorize_access_token()
             username = token_response["userinfo"]["preferred_username"]
             token = token_response["access_token"]
-        except Exception:
-            raise
+        except Exception as e:
+            raise e
         else:
             self.login(username, token, sso_data=token_response)
 
     def login(self, login_id: str, password: str, sso_data: dict = {}):
         try:
             sessionManager: LimsSessionManager = self._login(login_id, password)
-        except Exception as e:
+        except BaseException as e:
             logging.getLogger("MX3.HWR").error(str(e))
-            raise
+            raise e
         else:
             if "sid" not in flask.session:
                 flask.session["sid"] = str(uuid.uuid4())
@@ -379,10 +379,9 @@ class UserManager(BaseUserManager):
             session_manager: LimsSessionManager = HWR.beamline.lims.login(
                 login_id, password, is_local_host()
             )
-        except Exception as e:
-            print(e)
+        except BaseException as e:
             logging.getLogger("MX3.HWR").error(e)
-            raise Exception("Failed to log in the lims system")
+            raise e
 
         self._debug(
             "_login. proposal_tuple retrieved. Sessions=%s "
