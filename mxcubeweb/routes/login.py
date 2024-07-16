@@ -34,9 +34,11 @@ def init_route(app, server, url_prefix):
         password = params.get("password", "")
 
         try:
-
             app.usermanager.login(login_id, password)
         except BaseException as ex:
+            import sys, traceback
+
+            traceback.print_exc(file=sys.stdout)
             msg = "[LOGIN] User %s could not login" % login_id
             logging.getLogger("MX3.HWR").warning(msg)
             res = make_response(
