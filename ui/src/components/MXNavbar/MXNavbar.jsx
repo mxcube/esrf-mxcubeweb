@@ -4,6 +4,8 @@ import { BsList } from 'react-icons/bs';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { showProposalsForm, signOut } from '../../actions/login';
+import { serverIO } from '../../serverIO';
+import ArgusButton from '../Argus/Argus';
 import styles from './MXNavbar.module.css';
 
 function MXNavbar() {
@@ -67,6 +69,11 @@ function MXNavbar() {
             </Nav.Link>
           </Nav>
           <Nav className={styles.subNav}>
+            <ArgusButton
+              onClick={() => {
+                toggle(false);
+              }}
+            />
             <Nav.Link as={NavLink} className={styles.navLink} to="/help">
               <span className="me-2 fas fa-lg fa-question-circle" />
               Help

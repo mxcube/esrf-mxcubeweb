@@ -1,0 +1,10 @@
+.argusButton {
+  composes: navBtn from '../MXNavbar/MXNavbar.module.css';
+}
+
+.eyeContainer {
+  width: 20px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+}
