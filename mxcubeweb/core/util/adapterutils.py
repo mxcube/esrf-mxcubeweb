@@ -27,6 +27,7 @@ def get_adapter_cls_from_hardware_object(ho):
     # inly works because mxcubecore adds mxcubecore.HardwareObjects to
     # sys path in __init__.py
     import DataPublisher
+    import Argus
 
     from mxcubeweb.core.adapter.actuator_adapter import ActuatorAdapter
     from mxcubeweb.core.adapter.motor_adapter import MotorAdapter
@@ -43,6 +44,7 @@ def get_adapter_cls_from_hardware_object(ho):
         DiffractometerAdapter,
     )
     from mxcubeweb.core.adapter.nstate_adapter import NStateAdapter
+    from mxcubeweb.core.adapter.argus_adapter import ArgusAdapter
 
     if isinstance(ho, AbstractNState.AbstractNState) or isinstance(
         ho, AbstractShutter.AbstractShutter
@@ -64,6 +66,8 @@ def get_adapter_cls_from_hardware_object(ho):
         return DataPublisherAdapter
     elif isinstance(ho, AbstractMotor.AbstractMotor):
         return MotorAdapter
+    elif isinstance(ho, Argus.Argus):
+        return ArgusAdapter
     elif isinstance(ho, AbstractActuator.AbstractActuator):
         return ActuatorAdapter
     else:

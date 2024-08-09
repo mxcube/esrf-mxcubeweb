@@ -14,6 +14,7 @@ import ConfirmCollectDialog from '../containers/ConfirmCollectDialog';
 import WorkflowParametersDialog from '../containers/WorkflowParametersDialog';
 import GphlWorkflowParametersDialog from '../containers/GphlWorkflowParametersDialog';
 import SelectProposalContainer from '../containers/SelectProposalContainer';
+import ArgusContainer from '../containers/ArgusContainer';
 import diagonalNoise from '../img/diagonal-noise.png';
 import { showDialog } from '../actions/general';
 import { LimsResultDialog } from './Lims/LimsResultDialog';
@@ -55,6 +56,7 @@ function Main() {
       )}
 
       <SelectProposalContainer />
+      <ArgusContainer />
       <ClearQueueDialog />
       <TaskContainer />
       <PleaseWaitDialog />

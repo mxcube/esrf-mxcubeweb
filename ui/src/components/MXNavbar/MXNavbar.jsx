@@ -5,7 +5,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { showProposalsForm, signOut } from '../../actions/login';
 import { serverIO } from '../../serverIO';
-import ArgusButton from '../Argus/Argus';
+import ArgusButton from '../Argus/ArgusButton';
 import styles from './MXNavbar.module.css';
 
 function MXNavbar() {
