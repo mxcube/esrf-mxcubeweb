@@ -47,62 +47,62 @@ function LoginForm() {
         MXCuBE
       </h1>
       <fieldset className={styles.fieldset} disabled={loading}>
-        {process.env.REACT_APP_SSO !== 'true' && [
-        <Form.Group className="mb-3">
-          <InputGroup>
-            <InputGroup.Text>
-              <i className="fas fa-user" />
-            </InputGroup.Text>
-            <Controller
-              name="username"
-              control={control}
-              rules={{ required: 'Login ID is required' }}
-              render={({ field }) => (
-                <Form.Control
-                  type="text"
-                  aria-label="Login ID"
-                  placeholder="Login ID"
-                  autoFocus // eslint-disable-line jsx-a11y/no-autofocus
-                  required
-                  isInvalid={!!errors.username}
-                  {...field}
-                />
+        {import.meta.env.VITE_SSO !== 'true' && [
+          <Form.Group className="mb-3" key="username">
+            <InputGroup>
+              <InputGroup.Text>
+                <i className="fas fa-user" />
+              </InputGroup.Text>
+              <Controller
+                name="username"
+                control={control}
+                rules={{ required: 'Login ID is required' }}
+                render={({ field }) => (
+                  <Form.Control
+                    type="text"
+                    aria-label="Login ID"
+                    placeholder="Login ID"
+                    autoFocus // eslint-disable-line jsx-a11y/no-autofocus
+                    required
+                    isInvalid={!!errors.username}
+                    {...field}
+                  />
+                )}
+              />
+              {errors.username && (
+                <Form.Control.Feedback type="invalid">
+                  {errors.username.message}
+                </Form.Control.Feedback>
               )}
-            />
-            {errors.username && (
-              <Form.Control.Feedback type="invalid">
-                {errors.username.message}
-              </Form.Control.Feedback>
-            )}
-          </InputGroup>
-        </Form.Group>,
-        <Form.Group className="mb-3">
-          <InputGroup>
-            <InputGroup.Text>
-              <i className="fas fa-lock" />
-            </InputGroup.Text>
-            <Controller
-              name="password"
-              control={control}
-              rules={{ required: 'Password is required' }}
-              render={({ field }) => (
-                <Form.Control
-                  type="password"
-                  aria-label="Password"
-                  placeholder="Password"
-                  required
-                  isInvalid={!!errors.password}
-                  {...field}
-                />
+            </InputGroup>
+          </Form.Group>,
+          <Form.Group className="mb-3" key="password">
+            <InputGroup>
+              <InputGroup.Text>
+                <i className="fas fa-lock" />
+              </InputGroup.Text>
+              <Controller
+                name="password"
+                control={control}
+                rules={{ required: 'Password is required' }}
+                render={({ field }) => (
+                  <Form.Control
+                    type="password"
+                    aria-label="Password"
+                    placeholder="Password"
+                    required
+                    isInvalid={!!errors.password}
+                    {...field}
+                  />
+                )}
+              />
+              {errors.password && (
+                <Form.Control.Feedback type="invalid">
+                  {errors.password.message}
+                </Form.Control.Feedback>
               )}
-            />
-            {errors.password && (
-              <Form.Control.Feedback type="invalid">
-                {errors.password.message}
-              </Form.Control.Feedback>
-            )}
-          </InputGroup>
-        </Form.Group>
+            </InputGroup>
+          </Form.Group>,
         ]}
         {process.env.VITE_SSO === 'true' ? (
           <Button onClick={handleSingleSignOn} size="lg" className={styles.btn}>
