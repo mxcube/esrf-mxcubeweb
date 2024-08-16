@@ -50,3 +50,16 @@
   align-items: center;
   justify-content: space-evenly;
 }
+
+.commandContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.submitButtonContainer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
