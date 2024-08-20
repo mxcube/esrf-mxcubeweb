@@ -7,7 +7,7 @@ import logo from '../../img/mxcube_logo20.png';
 import loader from '../../img/loader.gif';
 import styles from './LoginForm.module.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { logIn } from '../../actions/login';
+import { logIn, ssoLogIn } from '../../actions/login';
 
 function LoginForm() {
   const dispatch = useDispatch();
@@ -32,8 +32,8 @@ function LoginForm() {
     }
   }
 
-  function handleSingleSignOn() {
-    ssoLogIn();
+  async function handleSingleSignOn() {
+    await dispatch(ssoLogIn());
   }
 
   return (
@@ -104,7 +104,7 @@ function LoginForm() {
             </InputGroup>
           </Form.Group>,
         ]}
-        {process.env.VITE_SSO === 'true' ? (
+        {import.meta.env.VITE_SSO === 'true' ? (
           <Button onClick={handleSingleSignOn} size="lg" className={styles.btn}>
             {loading && (
               <img className={styles.loader} src={loader} width="25" alt="" />
@@ -119,7 +119,7 @@ function LoginForm() {
             Sign in with proposal
           </Button>
         )}
-        {!loading && showError && (
+        {!loading && showErrorPanel && (
           <Alert className="mt-3" variant="danger">
             <pre className={styles.errorMsg}>{errorMessage}</pre>
           </Alert>
