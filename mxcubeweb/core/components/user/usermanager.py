@@ -1,5 +1,4 @@
 import logging
-import json
 import uuid
 import datetime
 import requests
@@ -23,14 +22,13 @@ from mxcubecore import HardwareRepository as HWR
 class BaseUserManager(ComponentBase):
     def __init__(self, app, config):
         super().__init__(app, config)
-
         self.oauth_client = OAuth(app=app.server.flask)
-        self.oauth_issuer = "https://websso.esrf.fr/realms/ESRF/"
-        self.oauth_logout_url = (
-            "https://websso.esrf.fr/auth/realms/ESRF/protocol/openid-connect/logout"
-        )
-        self.oauth_client_secret = "95nOugpRxwF3ttXxYnXFiK6bou5wtSP1"
-        self.oauth_client_id = "mxcube"
+
+        self.oauth_issuer = self.app.CONFIG.sso.ISSUER
+        self.oauth_logout_url = self.app.CONFIG.sso.LOGOUT_URI
+        self.oauth_client_secret = self.app.CONFIG.sso.CLIENT_SECRET
+        self.oauth_client_id = self.app.CONFIG.sso.CLIENT_ID
+
         self.oauth_client.register(
             name="keycloak",
             client_id=self.oauth_client_id,
