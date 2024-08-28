@@ -8,8 +8,10 @@ import 'fabric';
 
 import OneAxisTranslationControl from '../MotorInput/OneAxisTranslationControl';
 import { HW_STATE } from '../../constants';
+import { sendTakeSnapshot } from '../../api/sampleview';
 
 import styles from './SampleControls.module.css';
+import { downloadImage } from './utils';
 
 const { fabric } = window;
 
@@ -18,7 +20,7 @@ export default class SampleControls extends React.Component {
     super(props);
 
     this.takeSnapShot = this.takeSnapShot.bind(this);
-    this.doTakeSnapshot = this.doTakeSnapshot.bind(this);
+    this.getCanvasData = this.getCanvasData.bind(this);
     this.toggleFrontLight = this.toggleLight.bind(
       this,
       'diffractometer.frontlight',
@@ -30,10 +32,6 @@ export default class SampleControls extends React.Component {
     this.toggleCentring = this.toggleCentring.bind(this);
     this.toggleDrawGrid = this.toggleDrawGrid.bind(this);
     this.availableVideoSizes = this.availableVideoSizes.bind(this);
-  }
-
-  componentDidMount() {
-    window.takeSnapshot = this.doTakeSnapshot;
   }
 
   toggleDrawGrid() {
@@ -49,20 +47,24 @@ export default class SampleControls extends React.Component {
     }
   }
 
-  doTakeSnapshot() {
+  getCanvasData() {
     const img = document.querySelector('#sample-img');
     const fimg = new fabric.Image(img);
     fimg.scale(this.props.imageRatio);
     let imgDataURI = '';
     this.props.canvas.setBackgroundImage(fimg);
     this.props.canvas.renderAll();
-    imgDataURI = this.props.canvas.toDataURL({ format: 'jpeg' });
+    imgDataURI = this.props.canvas.toDataURL({
+      format: 'png',
+      backgroundColor: null,
+    });
     this.props.canvas.setBackgroundImage(0);
     this.props.canvas.renderAll();
-    return { data: imgDataURI.slice(23), mime: imgDataURI.slice(0, 23) };
+    // this function should only return the data not the mime
+    return imgDataURI.split(',')[1];
   }
 
-  takeSnapShot(evt) {
+  async takeSnapShot() {
     /* eslint-disable unicorn/consistent-function-scoping */
     function imageEpolog(props) {
       const { sampleID } = props.currentSampleID;
@@ -75,11 +77,10 @@ export default class SampleControls extends React.Component {
       return 'no-sample';
     }
 
-    const img = this.doTakeSnapshot();
+    const processedImgBlob = await sendTakeSnapshot(this.getCanvasData());
     const filename = `${this.props.proposal}-${imageEpolog(this.props)}.jpeg`;
 
-    evt.currentTarget.href = img.mime + img.data;
-    evt.currentTarget.download = filename;
+    downloadImage(processedImgBlob, filename);
   }
 
   toggleCentring() {
@@ -161,11 +162,7 @@ export default class SampleControls extends React.Component {
       <div className={styles.controls}>
         {this.props.getControlAvailability('snapshot') && (
           <Button
-            as="a"
             className={styles.controlBtn}
-            href="#"
-            target="_blank"
-            download
             title="Take snapshot"
             data-toggle="tooltip"
             onClick={this.takeSnapShot}
