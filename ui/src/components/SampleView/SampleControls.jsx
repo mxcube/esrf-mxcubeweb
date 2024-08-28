@@ -8,6 +8,7 @@ import 'fabric';
 
 import OneAxisTranslationControl from '../MotorInput/OneAxisTranslationControl';
 import { MOTOR_STATE } from '../../constants';
+import { sendTakeSnapshot } from '../../api/sampleview';
 
 import { find } from 'lodash';
 import styles from './SampleControls.module.css';
@@ -19,7 +20,7 @@ export default class SampleControls extends React.Component {
     super(props);
 
     this.takeSnapShot = this.takeSnapShot.bind(this);
-    this.doTakeSnapshot = this.doTakeSnapshot.bind(this);
+    this.getCanvasData = this.getCanvasData.bind(this);
     this.toggleFrontLight = this.toggleLight.bind(
       this,
       'diffractometer.frontlight',
@@ -31,10 +32,6 @@ export default class SampleControls extends React.Component {
     this.toggleCentring = this.toggleCentring.bind(this);
     this.toggleDrawGrid = this.toggleDrawGrid.bind(this);
     this.availableVideoSizes = this.availableVideoSizes.bind(this);
-  }
-
-  componentDidMount() {
-    window.takeSnapshot = this.doTakeSnapshot;
   }
 
   toggleDrawGrid() {
@@ -50,20 +47,37 @@ export default class SampleControls extends React.Component {
     }
   }
 
-  doTakeSnapshot() {
+  downloadImage(blob, download_name) {
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', download_name);
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  getCanvasData() {
     const img = document.querySelector('#sample-img');
     const fimg = new fabric.Image(img);
     fimg.scale(this.props.imageRatio);
     let imgDataURI = '';
+    const originalBgColor = this.props.canvas.backgroundColor;
+    this.props.canvas.setBackgroundColor(null);
     this.props.canvas.setBackgroundImage(fimg);
     this.props.canvas.renderAll();
-    imgDataURI = this.props.canvas.toDataURL({ format: 'jpeg' });
+    imgDataURI = this.props.canvas.toDataURL({
+      format: 'png',
+      backgroundColor: null,
+    });
+    this.props.canvas.setBackgroundColor(originalBgColor);
     this.props.canvas.setBackgroundImage(0);
     this.props.canvas.renderAll();
-    return { data: imgDataURI.slice(23), mime: imgDataURI.slice(0, 23) };
+    return imgDataURI;
   }
 
-  takeSnapShot(evt) {
+  async takeSnapShot() {
     /* eslint-disable unicorn/consistent-function-scoping */
     function imageEpolog(props) {
       const { sampleID } = props.currentSampleID;
@@ -76,11 +90,11 @@ export default class SampleControls extends React.Component {
       return 'no-sample';
     }
 
-    const img = this.doTakeSnapshot();
+    const imgDataURI = this.getCanvasData();
+    const processedImgBlob = await sendTakeSnapshot(imgDataURI.split(',')[1]);
     const filename = `${this.props.proposal}-${imageEpolog(this.props)}.jpeg`;
 
-    evt.currentTarget.href = img.mime + img.data;
-    evt.currentTarget.download = filename;
+    this.downloadImage(processedImgBlob, filename);
   }
 
   toggleCentring() {
@@ -170,11 +184,7 @@ export default class SampleControls extends React.Component {
       <div className={styles.controls}>
         {this.props.getControlAvailability('snapshot') && (
           <Button
-            as="a"
             className={styles.controlBtn}
-            href="#"
-            target="_blank"
-            download
             title="Take snapshot"
             data-toggle="tooltip"
             onClick={this.takeSnapShot}
