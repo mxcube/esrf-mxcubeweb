@@ -434,7 +434,6 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
     # devices that can move sample on beam
     # (sample changer, plate holder)
     sample_mount_device = HWR.beamline.sample_changer
-
     mount_from_harvester = mxcube.harvester.mount_from_harvester()
 
     if (
