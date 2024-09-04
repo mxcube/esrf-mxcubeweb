@@ -32,6 +32,9 @@ class SSOConfigModel(BaseModel):
     LOGOUT_URI: str = Field("", description="OpenIDConnect / OAuth logout URI")
     CLIENT_SECRET: str = Field("", description="OpenIDConnect / OAuth client secret")
     CLIENT_ID: str = Field("", description="OpenIDConnect / OAuth  client id")
+    META_DATA_URI: str = Field(
+        "", description="OpenIDConnect / OAuth  .well-known configuration"
+    )
     SCOPE: str = Field(
         "openid email profile", description="OpenIDConnect / OAuth scope"
     )
@@ -139,4 +142,4 @@ class MXCUBEAppConfigModel(BaseModel):
 class AppConfigModel(BaseModel):
     server: FlaskConfigModel
     mxcube: MXCUBEAppConfigModel
-    sso: SSOConfigModel
+    sso: Optional[SSOConfigModel]
