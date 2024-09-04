@@ -2,6 +2,7 @@ import logging
 import uuid
 import datetime
 import requests
+import json
 
 import flask
 import flask_security
@@ -24,18 +25,11 @@ class BaseUserManager(ComponentBase):
         super().__init__(app, config)
         self.oauth_client = OAuth(app=app.server.flask)
 
-        self.oauth_issuer = self.app.CONFIG.sso.ISSUER
-        self.oauth_logout_url = self.app.CONFIG.sso.LOGOUT_URI
-        self.oauth_client_secret = self.app.CONFIG.sso.CLIENT_SECRET
-        self.oauth_client_id = self.app.CONFIG.sso.CLIENT_ID
-
         self.oauth_client.register(
             name="keycloak",
-            client_id=self.oauth_client_id,
-            client_secret=self.oauth_client_secret,
-            server_metadata_url=(
-                "https://websso.esrf.fr/realms/ESRF/.well-known/openid-configuration"
-            ),
+            client_id=self.app.CONFIG.sso.CLIENT_ID,
+            client_secret=self.app.CONFIG.sso.CLIENT_SECRET,
+            server_metadata_url=self.app.CONFIG.sso.META_DATA_URI,
             client_kwargs={
                 "scope": "openid email profile",
                 "code_challenge_method": "S256",  # enable PKCE
@@ -171,6 +165,25 @@ class BaseUserManager(ComponentBase):
             raise e
         else:
             self.login(username, token, sso_data=token_response)
+
+    def sso_token_expired(self) -> bool:
+        res = json.loads(
+            requests.post(
+                self.app.CONFIG.sso.TOKEN_INFO_URI,
+                headers={"Authorization": "Bearer %s" % current_user.token},
+                data={
+                    "grant_type": "refresh_token",
+                    "refresh_token": current_user.refresh_token,
+                },
+            ).json()
+        )
+
+        return "access_token" not in res
+
+    def handle_sso_logout(self):
+        if current_user.is_anonymous:
+            if self.sso_token_expired():
+                self.signout()
 
     def login(self, login_id: str, password: str, sso_data: dict = {}):
         try:
@@ -334,13 +347,15 @@ class BaseUserManager(ComponentBase):
                 nickname=user,
                 session_id=sid,
                 selected_proposal=selected_proposal,
-                limsdata=lims_data.json(),  # json.dumps(lims_data),
+                limsdata=lims_data.json(),
                 refresh_token=sso_data.get("refresh_token", str(uuid.uuid4())),
+                token=sso_data.get("token", str(uuid.uuid4())),
                 roles=self._get_configured_roles(user),
             )
         else:
             _u.limsdata = lims_data.json()  # json.dumps(lims_data)
-            _u.refresh_token = sso_data.get("refresh_token", "")
+            _u.refresh_token = sso_data.get("refresh_token", str(uuid.uuid4()))
+            _u.token = sso_data.get("token", str(uuid.uuid4()))
             user_datastore.append_roles(_u, self._get_configured_roles(user))
 
         self.app.server.user_datastore.commit()
@@ -455,10 +470,10 @@ class UserManager(BaseUserManager):
 
     def _signout(self):
         requests.post(
-            self.oauth_logout_url,
+            self.app.CONFIG.sso.LOGOUT_URI,
             data={
-                "client_id": self.oauth_client_id,
-                "client_secret": self.oauth_client_secret,
+                "client_id": self.app.CONFIG.sso.CLIENT_ID,
+                "client_secret": self.app.CONFIG.sso.CLIENT_SECRET,
                 "refresh_token": current_user.refresh_token,
             },
         )
