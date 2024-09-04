@@ -36,7 +36,8 @@ def init_route(app, server, url_prefix):
         try:
             app.usermanager.login(login_id, password)
         except BaseException as ex:
-            import sys, traceback
+            import sys
+            import traceback
 
             traceback.print_exc(file=sys.stdout)
             msg = "[LOGIN] User %s could not login" % login_id
@@ -55,8 +56,14 @@ def init_route(app, server, url_prefix):
 
         return res
 
+    @bp.route("/sso_post_logout", methods=["GET"])
+    @server.restrict
+    def ssosignout():
+        app.usermanager.signout()
+        return redirect("/")
+
     @bp.route("/ssologin", methods=["GET"])
-    def ssosingin():
+    def ssosignin():
         redirect_uri = url_for("login.auth", _external=True)
         response = app.usermanager.oauth_client.keycloak.authorize_redirect(
             redirect_uri
@@ -103,12 +110,11 @@ def init_route(app, server, url_prefix):
         200: Error, could not log in, {"loggedIn": False}
         """
         try:
-
             res = app.usermanager.login_info()
 
             response = jsonify(res)
             session.permanent = True
-        except Exception as e:
+        except Exception:
             response = make_response(jsonify({"loggedIn": False}), 200)
 
         return response
@@ -127,6 +133,7 @@ def init_route(app, server, url_prefix):
         # Since default value of `SESSION_REFRESH_EACH_REQUEST` config setting is `True`
         # there is no need to do anything to refresh the session.
         app.usermanager.update_active_users()
+        app.usermanager.handle_sso_logout()
         return make_response("", 200)
 
     return bp
