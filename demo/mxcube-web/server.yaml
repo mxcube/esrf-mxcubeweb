@@ -19,6 +19,7 @@ server:
 sso:
   ISSUER: https://websso.esrf.fr/realms/ESRF/
   LOGOUT_URI: https://websso.esrf.fr/auth/realms/ESRF/protocol/openid-connect/logout
+  TOKEN_INFO_URI: https://websso.esrf.fr/auth/realms/ESRF/protocol/openid-connect/token
   CLIENT_SECRET: 95nOugpRxwF3ttXxYnXFiK6bou5wtSP1
   CLIENT_ID: mxcube
   SCOPE: openid email profile
