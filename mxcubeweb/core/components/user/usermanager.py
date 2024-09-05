@@ -134,7 +134,7 @@ class BaseUserManager(ComponentBase):
         if not active_in_control:
             if not HWR.beamline.lims.is_user_login_type():
                 # current_user.nickname = self.app.lims.get_proposal(current_user)
-
+                current_user.fullname = HWR.beamline.lims.get_full_user_name()
                 current_user.nickname = HWR.beamline.lims.get_user_name()
             else:
                 current_user.nickname = current_user.username
@@ -195,7 +195,7 @@ class BaseUserManager(ComponentBase):
             # Important to make flask_security user tracking work
             self.app.server.security.datastore.commit()
 
-            address, barcode = self.app.sample_changer.get_loaded_sample()
+            address = self.app.sample_changer.get_loaded_sample()
 
             # If A sample is mounted (and not already marked as such),
             # get sample changer contents and add mounted sample to the queue
@@ -309,6 +309,7 @@ class BaseUserManager(ComponentBase):
         user_datastore = self.app.server.user_datastore
 
         username = HWR.beamline.lims.get_user_name()
+        fullname = HWR.beamline.lims.get_full_user_name()
         # if HWR.beamline.lims.loginType.lower() == "user":
         #    username = f"{user}"
 
@@ -330,6 +331,7 @@ class BaseUserManager(ComponentBase):
 
             user_datastore.create_user(
                 username=username,
+                fullname=fullname,
                 password="",
                 nickname=user,
                 session_id=sid,
