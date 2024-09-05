@@ -55,6 +55,7 @@ class User(Base, UserMixin):
     email = Column(String(255), unique=True)
     username = Column(Unicode, unique=True, nullable=True)
     nickname = Column(String(255), unique=False)
+    fullname = Column(String(255), unique=False)
     password = Column(String(255), nullable=False)
     session_id = Column(String(255), unique=False)
     socketio_session_id = Column(String(255), unique=False)
@@ -113,4 +114,5 @@ class User(Base, UserMixin):
             "currentLoginAt": current_login_at_str,
             "requestsControl": self.requests_control,
             "requestsControlMsg": self.requests_control_msg,
+            "fullname": self.fullname,
         }
