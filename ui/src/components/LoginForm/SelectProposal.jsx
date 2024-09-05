@@ -39,7 +39,7 @@ class SelectProposal extends React.Component {
   handleCancel() {
     this.props.handleHide();
   }
-  
+
   selectProposal() {
     this.props.selectProposal(this.state.pNumber);
   }
@@ -92,6 +92,7 @@ class SelectProposal extends React.Component {
             ].map((item) => {
               return (
                 <a
+                  key={item.url}
                   href={item.url}
                   className="p-1"
                   target="_blank"
