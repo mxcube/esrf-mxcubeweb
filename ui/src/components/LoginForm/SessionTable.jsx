@@ -71,9 +71,7 @@ const getProposalBySession = (session) => {
 };
 
 export default function SessionTable(props) {
-  const [selectedSessionId, setSelectedSessionId] = useState(
-    props.selectedSessionId,
-  );
+  const headers = ['title', 'Start', 'End', 'Portal', 'User', 'Logbook'];
 
   return (
     <Table bordered hover size="sm" responsive>
@@ -81,12 +79,9 @@ export default function SessionTable(props) {
         <tr>
           <th></th>
           {props.params.showBeamline && <th>Beamline</th>}
-          <th className={styles.selected_row}>Title</th>
-          <th>Start</th>
-          <th>End</th>
-          <th>Portal</th>
-          <th>User</th>
-          <th>Logbook</th>
+          {headers.map((caption) => (
+            <th>{caption}</th>
+          ))}
         </tr>
       </thead>
       <tbody>
@@ -99,7 +94,6 @@ export default function SessionTable(props) {
           return (
             <tr
               onClick={() => {
-                setSelectedSessionId(session.session_id);
                 props.onSessionSelected(session);
               }}
               className={variant}
