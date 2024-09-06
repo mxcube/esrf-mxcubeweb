@@ -48,7 +48,7 @@ function loginReducer(state = INITIAL_STATE, action = {}) {
       const proposals = state.proposalList;
 
       const propInfo = proposals.find((prop) => {
-        //const name = `${prop.code}${prop.number}`;
+        // const name = `${prop.code}${prop.number}`;
         return prop.session_id === action.proposal;
       });
 
