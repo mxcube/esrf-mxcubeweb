@@ -39,7 +39,6 @@ class SelectProposal extends React.Component {
   }
 
   onSessionSelected(session) {
-    console.log('session selected');
     this.setState({
       proposal: this.getProposalBySession(session),
       session: session,
