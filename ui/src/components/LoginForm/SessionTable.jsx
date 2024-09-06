@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Table } from 'react-bootstrap';
 import { LuExternalLink } from 'react-icons/lu';
 import styles from './SessionTable.module.css';
@@ -35,7 +35,7 @@ const getDateComponent = (startDate, startTime) => {
  */
 const getScheduledDateComponent = (session, startDate, startTime) => {
   if (session.is_rescheduled) {
-    return <del>{getDateComponent(startDate, startTime)}</del>;
+    return <del className={styles.time}>{getDateComponent(startDate, startTime)}</del>;
   }
   return getDateComponent(startDate, startTime);
 };
@@ -52,8 +52,8 @@ const getLinkBySession = (session) => {
     { title: '', url: session.logbook_URL },
   ].map((item) => {
     return (
-      <p>
-        <a href={item.url} className="p-1" target="_blank" rel="noreferrer">
+      <p key={item.url}>
+        <a  href={item.url} className="p-1" target="_blank" rel="noreferrer">
           <LuExternalLink /> {item.title}
         </a>
       </p>
@@ -71,17 +71,18 @@ const getProposalBySession = (session) => {
 };
 
 export default function SessionTable(props) {
-  const headers = ['title', 'Start', 'End', 'Portal', 'User', 'Logbook'];
-
   return (
     <Table bordered hover size="sm" responsive>
       <thead>
         <tr>
-          <th></th>
+          <th />
           {props.params.showBeamline && <th>Beamline</th>}
-          {headers.map((caption) => (
-            <th>{caption}</th>
-          ))}
+         <th>Title</th>
+         <th>Start</th>
+         <th>End</th>
+         <th>Portal</th>
+         <th>User</th>
+         <th>Logbook</th>
         </tr>
       </thead>
       <tbody>
@@ -93,6 +94,7 @@ export default function SessionTable(props) {
 
           return (
             <tr
+              key={session.session_id}
               onClick={() => {
                 props.onSessionSelected(session);
               }}
@@ -102,7 +104,7 @@ export default function SessionTable(props) {
               {props.params.showBeamline && <td>{session.beamline_name}</td>}
               <td>{session.title}</td>
               <td>
-                <>
+
                   {getScheduledDateComponent(
                     session,
                     session.start_date,
@@ -114,10 +116,10 @@ export default function SessionTable(props) {
                       session.actual_start_date,
                       session.actual_start_time,
                     )}
-                </>
+
               </td>
               <td>
-                <>
+
                   {getScheduledDateComponent(
                     session,
                     session.end_date,
@@ -129,7 +131,7 @@ export default function SessionTable(props) {
                       session.actual_end_date,
                       session.actual_end_time,
                     )}
-                </>
+
               </td>
               <td>{getLinkBySession(session)[0]}</td>
               <td>{getLinkBySession(session)[1]}</td>
