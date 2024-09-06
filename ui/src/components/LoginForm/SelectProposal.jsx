@@ -1,39 +1,26 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
-import {
-  Modal,
-  Button,
-  Tabs,
-  Tab,
-  ListGroup,
-  Container,
-  Row,
-  Col,
-} from 'react-bootstrap';
-import Card from 'react-bootstrap/Card';
-import styles from './SelectProposal.module.css';
-import { LuExternalLink } from 'react-icons/lu';
+import { Modal, Button, Tabs, Tab, Form } from 'react-bootstrap';
+import SessionTable from './SessionTable';
 
 class SelectProposal extends React.Component {
   constructor(props) {
     super(props);
-    this.onClickRow = this.onClickRow.bind(this);
+
     this.selectProposal = this.selectProposal.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+    this.onSessionSelected = this.onSessionSelected.bind(this);
+
     this.state = {
       pId: 0,
       pNumber: null,
       session: null,
+      proposal: null,
+      filter: null,
+      sessions: props.data.proposalList,
+      filteredSessions: props.data.proposalList,
     };
-  }
-
-  onClickRow(prop) {
-    this.setState({
-      session: prop,
-      pId: prop.session_id,
-      pNumber: prop.session_id, //prop.code + prop.number,
-    });
   }
 
   handleCancel() {
@@ -44,174 +31,53 @@ class SelectProposal extends React.Component {
     this.props.selectProposal(this.state.pNumber);
   }
 
-  getClassNameRowColorBySession(session) {
-    if (session.is_scheduled_beamline && session.is_scheduled_time) {
-      return 'white';
+  getProposalBySession(session) {
+    if (!session) {
+      return '';
     }
-    if (
-      session.is_rescheduled &&
-      session.is_scheduled_time &&
-      session.is_scheduled_beamline
-    ) {
-      return 'bg-info';
-    }
-
-    if (!session.is_scheduled_beamline) {
-      return 'bg-danger';
-    }
-
-    return 'bg-warning';
+    return `${session.code}-${session.number}`;
   }
 
-  getDateComponent(startDate, startTime) {
-    return (
-      <>
-        <span className={styles.date}>{startDate}</span>
-        <span className={styles.time}>{startTime}</span>
-      </>
-    );
+  onSessionSelected(session) {
+    console.log('session selected');
+    this.setState({
+      proposal: this.getProposalBySession(session),
+      session: session,
+      pId: session.session_id,
+      pNumber: session.session_id,
+    });
   }
 
-  getScheduledDateComponent(session, startDate, startTime) {
-    if (session.is_rescheduled) {
-      return <del>{this.getDateComponent(startDate, startTime)}</del>;
-    }
-    return this.getDateComponent(startDate, startTime);
-  }
-
-  getLinkBySession(session) {
-    return (
-      <Col>
-        <ListGroup variant="flush">
-          <ListGroup.Item variant="dark">Shortcuts</ListGroup.Item>
-          <ListGroup.Item>
-            {[
-              { title: 'Portal', url: session.data_portal_URL },
-              { title: 'A-Form', url: session.user_portal_URL },
-              { title: 'Logbook', url: session.logbook_URL },
-            ].map((item) => {
-              return (
-                <a
-                  key={item.url}
-                  href={item.url}
-                  className="p-1"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <LuExternalLink /> {item.title}
-                </a>
-              );
-            })}
-          </ListGroup.Item>
-        </ListGroup>
-      </Col>
-    );
-  }
-
-  getSessionTable(sessions, params) {
-    const { showBeamline } = params;
-
-    return sessions.map((session) => {
-      const variant =
-        this.state.pId === session.session_id ? 'secondary' : 'light';
-
+  handleChange(event) {
+    const filteredSessions = this.state.sessions.filter((s) => {
       return (
-        <Card
-          bg={variant}
-          text={variant.toLowerCase() === 'light' ? 'dark' : 'white'}
-          key={session.session_id}
-          className="mt-1 p-1"
-          onClick={() => this.onClickRow(session)}
-        >
-          <Card.Body>
-            <Card.Title>
-              <span style={{ fontWeight: 'bold' }}>
-                {session.code + session.number}
-              </span>
-              <small className="px-2">{session.title}</small>
-            </Card.Title>
-
-            <Container>
-              <Row>
-                <Col>
-                  <ListGroup variant="flush">
-                    <ListGroup.Item variant="dark"> Start Date</ListGroup.Item>
-                    <ListGroup.Item
-                      variant={session.is_scheduled_time ? '' : 'warning'}
-                    >
-                      {this.getScheduledDateComponent(
-                        session,
-                        session.start_date,
-                        session.start_time,
-                      )}
-                    </ListGroup.Item>
-
-                    {session.is_rescheduled && (
-                      <ListGroup.Item>
-                        {this.getDateComponent(
-                          session.actual_start_date,
-                          session.actual_start_time,
-                        )}
-                      </ListGroup.Item>
-                    )}
-                  </ListGroup>
-                </Col>
-
-                <Col>
-                  <ListGroup variant="flush">
-                    <ListGroup.Item variant="dark">End Date</ListGroup.Item>
-                    <ListGroup.Item
-                      variant={session.is_scheduled_time ? '' : 'warning'}
-                    >
-                      {this.getScheduledDateComponent(
-                        session,
-                        session.end_date,
-                        session.end_time,
-                      )}
-                    </ListGroup.Item>
-
-                    {session.is_rescheduled && (
-                      <ListGroup.Item>
-                        {this.getDateComponent(
-                          session.actual_end_date,
-                          session.actual_end_time,
-                        )}
-                      </ListGroup.Item>
-                    )}
-                  </ListGroup>
-                </Col>
-                {showBeamline && (
-                  <Col>
-                    <ListGroup variant="flush">
-                      <ListGroup.Item variant="dark">Beamline</ListGroup.Item>
-                      <ListGroup.Item
-                        variant={session.is_scheduled_beamline ? '' : 'danger'}
-                      >
-                        {session.beamline_name}
-                      </ListGroup.Item>
-                    </ListGroup>
-                  </Col>
-                )}
-
-                {this.getLinkBySession(session)}
-              </Row>
-            </Container>
-            {session.is_rescheduled && (
-              <Card.Footer>
-                <p className="text-info">Session has been rescheduled</p>
-              </Card.Footer>
-            )}
-          </Card.Body>
-        </Card>
+        s.title.indexOf(event.target.value) !== -1 ||
+        s.number.indexOf(event.target.value) !== -1 ||
+        s.code.indexOf(event.target.value) !== -1
       );
+    });
+
+    this.setState({
+      filter: event.target.value,
+      filteredSessions: filteredSessions,
     });
   }
 
   render() {
-    const sortedlist = this.props.data.proposalList.sort((a, b) =>
-      a.number < b.number ? 1 : -1,
+    /** sort by start date */
+    let sortedlist = this.state.filteredSessions.sort((a, b) =>
+      a.actual_start_date < b.actual_start_date ? 1 : -1,
     );
+
     const session = this.state.session;
+
+    const scheduledSessions = sortedlist.filter(
+      (s) => s.is_scheduled_beamline && s.is_scheduled_time,
+    );
+
+    const nonScheduledSessions = sortedlist.filter(
+      (s) => !(s.is_scheduled_beamline && s.is_scheduled_time),
+    );
     return (
       <Modal
         show={this.props.show}
@@ -222,25 +88,44 @@ class SelectProposal extends React.Component {
           <Modal.Title>Select a session</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <>
+            <Form.Control
+              type="text"
+              id="search_session"
+              placeholder="Search"
+              value={this.state.filter}
+              onChange={this.handleChange.bind(this)}
+            />
+          </>
+          <br />
+
           <Tabs defaultActiveKey="scheduled" id="scheduled-tab">
-            <Tab eventKey="scheduled" title="Scheduled">
+            <Tab
+              eventKey="scheduled"
+              title={`Scheduled (${scheduledSessions.length})`}
+            >
               <div style={{ overflow: 'auto', height: '550px', padding: 10 }}>
-                {this.getSessionTable(
-                  sortedlist.filter(
-                    (s) => s.is_scheduled_beamline && s.is_scheduled_time,
-                  ),
-                  { showBeamline: false },
-                )}
+                <SessionTable
+                  sessions={scheduledSessions}
+                  selectedSessionId={this.state.pId}
+                  filter={this.state.filter}
+                  params={{ showBeamline: false }}
+                  onSessionSelected={this.onSessionSelected}
+                ></SessionTable>
               </div>
             </Tab>
-            <Tab eventKey="non-scheduled" title="Non scheduled">
-              <div style={{ overflow: 'auto', height: '550px' }}>
-                {this.getSessionTable(
-                  sortedlist.filter(
-                    (s) => !(s.is_scheduled_beamline && s.is_scheduled_time),
-                  ),
-                  { showBeamline: true },
-                )}
+            <Tab
+              eventKey="non-scheduled"
+              title={`Non scheduled (${nonScheduledSessions.length})`}
+            >
+              <div style={{ overflow: 'auto', height: '550px', padding: 10 }}>
+                <SessionTable
+                  sessions={nonScheduledSessions}
+                  selectedSessionId={this.state.pId}
+                  filter={this.state.filter}
+                  params={{ showBeamline: true }}
+                  onSessionSelected={this.onSessionSelected}
+                ></SessionTable>
               </div>
             </Tab>
           </Tabs>
@@ -281,7 +166,9 @@ class SelectProposal extends React.Component {
             }
             onClick={this.selectProposal}
           >
-            Select Proposal
+            {this.state.proposal === null
+              ? 'Select Proposal'
+              : 'Select ' + this.state.proposal}
           </Button>
         </Modal.Footer>
       </Modal>
