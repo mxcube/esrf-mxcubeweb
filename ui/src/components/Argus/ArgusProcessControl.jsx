@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
+import { useDispatch } from 'react-redux';
+
+import { hideRecording, showRecording } from '../../actions/argus';
 import { capitalize } from './ArgusForm';
 
 import styles from './Argus.module.css';
@@ -11,6 +14,8 @@ export default function ArgusProcessControl(props) {
   const [availableCommands, setAvailableCommands] = useState({
     selectedCommand: '',
   });
+
+  const dispatch = useDispatch();
 
   const setCommandData = (args) => {
     const current_command_data = { wait_time: '5' };
@@ -95,6 +100,13 @@ export default function ArgusProcessControl(props) {
         wait_time: Number.parseInt(wait_time),
         args: Object.values(args),
       });
+      // this is a special call to show/end the recording point on the argus button
+      // if a recording is started/ended
+      if (selectedCommand === 'start' && title === 'Recorder') {
+        dispatch(showRecording());
+      } else if (selectedCommand === 'stop' && title === 'Recorder') {
+        dispatch(hideRecording());
+      }
     }
 
     hide();

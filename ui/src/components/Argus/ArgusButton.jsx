@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import Eye from './Eye';
-
-import styles from './Argus.module.css';
 import { showArgusForm } from '../../actions/argus';
 
-export default function ArgusButton(props) {
-  const [running, toggleProcesses] = useState(false);
-  const [recording, toggleRecording] = useState(false);
-  const dispatch = useDispatch();
+import styles from './Argus.module.css';
+
+function ArgusButton(props) {
+  const { onClick, recording, running, showArgusForm } = props;
 
   const handleButtonClick = () => {
-    props.onClick();
-    toggleProcesses(!running);
-    toggleRecording(!recording);
-    dispatch(showArgusForm());
+    onClick();
+    showArgusForm();
   };
 
   return (
@@ -25,8 +22,8 @@ export default function ArgusButton(props) {
       onClick={handleButtonClick}
     >
       <div className={`${styles.eyeContainer} me-2`}>
-        {running ? (
-          <Eye recording={recording && running} />
+        {running || recording ? (
+          <Eye recording={recording} />
         ) : (
           <span className="fas fa-solid fa-eye-slash" />
         )}
@@ -35,3 +32,20 @@ export default function ArgusButton(props) {
     </button>
   );
 }
+
+function mapStateToProps(state) {
+  return {
+    recording: state.general.showRecording,
+    running:
+      state.beamline.hardwareObjects.argus.attributes.processes_info
+        .closable_running,
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    showArgusForm: bindActionCreators(showArgusForm, dispatch),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ArgusButton);

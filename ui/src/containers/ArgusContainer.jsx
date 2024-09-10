@@ -2,7 +2,7 @@ import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { ArgusForm } from '../components/Argus/ArgusForm';
-import { showArgusForm, hideArgusForm } from '../actions/argus';
+import { hideArgusForm } from '../actions/argus';
 import { executeCommand } from '../actions/beamline';
 
 function ArgusContainer(props) {
@@ -25,7 +25,6 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    showArgusForm: bindActionCreators(showArgusForm, dispatch),
     hideArgusForm: bindActionCreators(hideArgusForm, dispatch),
     sendExecuteCommand: bindActionCreators(executeCommand, dispatch),
   };

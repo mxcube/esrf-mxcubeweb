@@ -29,63 +29,13 @@ export default function BeamlineCamera(props) {
     const DraggableElements = [];
     cameraSetup.components.forEach((camera, vIndex) => {
       DraggableElements.push(
-        showVideoModal[vIndex] ? (
-          <div
-            key={`draggable-video_${camera.label}`}
-            className="draggableHandle"
-          >
-            <Draggable defaultPosition={{ x: 200, y: 100 + 50 * vIndex }}>
-              <Card className={styles.draggableHandle}>
-                <Card.Header>
-                  <Stack direction="horizontal" gap={3}>
-                    <div className={styles.headerTitle}>{camera.label}</div>
-                    <div className="p-2 ms-auto">
-                      <Button
-                        variant="outline-secondary"
-                        onClick={() =>
-                          handleImageClick(
-                            camera.url,
-                            camera.width,
-                            camera.height,
-                          )
-                        }
-                        size="sm"
-                      >
-                        <img src={pip} alt="PIP Icon" />
-                      </Button>
-                    </div>
-                    <div className="vr" />
-                    <div>
-                      <MdClose
-                        color="red"
-                        onClick={() => handleShowVideoCard(vIndex, false)}
-                        size="1.5em"
-                        className={styles.closeBtn}
-                      />
-                    </div>
-                  </Stack>
-                </Card.Header>
-                <Card.Body>
-                  {camera.format !== 'mp4' ? (
-                    <img
-                      src={camera.url}
-                      alt={camera.label}
-                      width={camera.width}
-                      height={camera.height}
-                    />
-                  ) : (
-                    <video
-                      src={camera.url}
-                      alt={camera.label}
-                      width={camera.width}
-                      height={camera.height}
-                    />
-                  )}
-                </Card.Body>
-              </Card>
-            </Draggable>
-          </div>
-        ) : null,
+        <CameraCard
+          camera={camera}
+          vIndex={vIndex}
+          handleShowVideoCard={handleShowVideoCard}
+          isVisible={showVideoModal[vIndex]}
+          key={`CameraCard_${camera.label}`}
+        />,
       );
     });
     return DraggableElements;
