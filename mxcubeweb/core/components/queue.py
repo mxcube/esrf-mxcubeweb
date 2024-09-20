@@ -349,8 +349,8 @@ class Queue(ComponentBase):
             parameters["path"], parameters["fileName"]
         )
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
+        # limsres = {}
+        # lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
@@ -411,8 +411,8 @@ class Queue(ComponentBase):
             parameters["directory"], parameters["fileName"]
         )
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
+        # limsres = {}
+        # lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
@@ -460,8 +460,8 @@ class Queue(ComponentBase):
             parameters["path"], parameters["fileName"]
         )
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
+        # limsres = {}
+        # lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
@@ -578,8 +578,8 @@ class Queue(ComponentBase):
         queueID = node._node_id
         enabled, state = self.get_node_state(queueID)
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
+        # limsres = {}
+        # lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
 
         # Only add data from lims if explicitly asked for, since
         # its a operation that can take some time.
