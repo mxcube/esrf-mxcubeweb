@@ -250,7 +250,7 @@ def get_task_state(entry):
     node_id = entry.get_data_model()._node_id
     _, state = mxcube.queue.get_node_state(node_id)
     node_index = mxcube.queue.node_index(entry.get_data_model())
-    lims_id = mxcube.NODE_ID_TO_LIMS_ID.get(node_id, "null")
+    # lims_id = mxcube.NODE_ID_TO_LIMS_ID.get(node_id, "null")
 
     # try:
     #     limsres = HWR.beamline.lims.get_dc(lims_id)
@@ -280,13 +280,13 @@ def get_task_state(entry):
 
 def update_task_result(entry):
     node_index = mxcube.queue.node_index(entry.get_data_model())
-    node_id = entry.get_data_model()._node_id
-    lims_id = mxcube.NODE_ID_TO_LIMS_ID.get(node_id, "null")
+    # node_id = entry.get_data_model()._node_id
+    # lims_id = mxcube.NODE_ID_TO_LIMS_ID.get(node_id, "null")
 
-    try:
-        limsres = HWR.beamline.get_dc(lims_id)
-    except Exception:
-        limsres = {}
+    # try:
+    #     limsres = HWR.beamline.get_dc(lims_id)
+    # except Exception:
+    #     limsres = {}
 
     # try:
     #     limsres["limsTaskLink"] = mxcube.lims.get_dc_link(lims_id)

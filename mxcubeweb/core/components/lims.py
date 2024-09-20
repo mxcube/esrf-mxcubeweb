@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import logging
-import io
 import math
 import re
 import json
@@ -191,7 +190,7 @@ class Lims(ComponentBase):
         # Selecting the active session in the LIMS object
         try:
             HWR.beamline.lims.set_active_session_by_id(session_id)
-            session: Session = HWR.beamline.lims.set_active_session_by_id(session_id)
+            session = HWR.beamline.lims.set_active_session_by_id(session_id)
             if session is None:
                 raise "No session selected on LIMS"
         except BaseException as e:
@@ -270,7 +269,6 @@ class Lims(ComponentBase):
         return HWR.beamline.session.get_default_subdir(sample_data)
 
     def synch_with_lims(self, lims_name):
-
         # session_id is not used, so we can pass None as second argument to
         # 'db_connection.get_samples'
 

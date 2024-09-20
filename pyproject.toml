@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mxcubeweb"
-version = "4.175.0"
+version = "4.175.0+esrf.0920-1"
 license = "LGPL-3.0-or-later"
 description = "MXCuBE Web user interface"
 authors = ["The MXCuBE collaboration <mxcube@esrf.fr>"]
@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.8,<3.11"
 Flask = "^3.0.3"
 werkzeug = "^3.0.3"
 Flask-SocketIO = "^5.3.6"
