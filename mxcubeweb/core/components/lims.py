@@ -244,7 +244,7 @@ class Lims(ComponentBase):
 
         # save selected proposal in users db
 
-        current_user.selected_proposal = session.session_id
+        current_user.selected_proposal = session.proposal_name
         self.app.usermanager.update_user(current_user)
 
         logging.getLogger("user_log").info(

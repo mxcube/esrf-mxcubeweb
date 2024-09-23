@@ -137,9 +137,8 @@ class BaseUserManager(ComponentBase):
         for _u in User.query.all():
             if _u.is_authenticated and _u.in_control:
                 if not HWR.beamline.lims.is_user_login_type():
-                    # In principle there is no need for doing so..
                     self.app.lims.select_session(
-                        self.app.lims.get_session_manager().active_session.proposal_name
+                        _u.selected_proposal
                     )  # The username is the proposal
                 elif _u.selected_proposal is not None:
                     self.app.lims.select_session(_u.selected_proposal)
