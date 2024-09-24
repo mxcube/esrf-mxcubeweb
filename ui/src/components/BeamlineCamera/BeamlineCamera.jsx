@@ -1,23 +1,12 @@
-import React, { useState } from 'react';
-import { Button, Dropdown, Card, Stack } from 'react-bootstrap';
-import Draggable from 'react-draggable';
+import React, { useEffect, useState } from 'react';
+import { Dropdown } from 'react-bootstrap';
+import { connect } from 'react-redux';
 
-import { MdClose } from 'react-icons/md';
+import CameraCard from './CameraCard';
 
-import styles from './beamlineCamera.module.css';
-import pip from './picture_in_picture.svg';
-
-function handleImageClick(url, width, height) {
-  window.open(
-    url,
-    'webcam',
-    `toolbar=0,location=0,menubar=0,addressbar=0,height=${height},width=${width}`,
-    'popup',
-  );
-}
-
-export default function BeamlineCamera(props) {
-  const { cameraSetup } = props;
+function BeamlineCamera(props) {
+  const { cameraSetup, argusStreams } = props;
+  const [allCameras, setCameras] = useState(cameraSetup.components);
 
   const [showVideoModal, setShowVideoModal] = useState({});
 
@@ -27,7 +16,7 @@ export default function BeamlineCamera(props) {
 
   function renderVideo() {
     const DraggableElements = [];
-    cameraSetup.components.forEach((camera, vIndex) => {
+    allCameras.forEach((camera, vIndex) => {
       DraggableElements.push(
         <CameraCard
           camera={camera}
@@ -41,7 +30,25 @@ export default function BeamlineCamera(props) {
     return DraggableElements;
   }
 
-  if (!cameraSetup || cameraSetup.components.length <= 0) {
+  useEffect(() => {
+    const argusCameras = Object.entries(argusStreams).map(([key, value]) => {
+      return {
+        description: null,
+        format: null,
+        height: 1280,
+        width: 960,
+        label: key,
+        url: `ws://localhost:9090/ws/${value}`,
+      };
+    });
+    if (cameraSetup && cameraSetup.components.length > 0) {
+      setCameras([...cameraSetup.components, ...argusCameras]);
+    } else {
+      setCameras(argusCameras);
+    }
+  }, [argusStreams, cameraSetup]);
+
+  if (!allCameras || allCameras.length <= 0) {
     return null;
   }
 
@@ -63,14 +70,14 @@ export default function BeamlineCamera(props) {
           Beamline Cameras
         </Dropdown.Toggle>
         <Dropdown.Menu>
-          {cameraSetup.components.map((camera, cIndex) => [
+          {allCameras.map((camera, cIndex) => [
             <Dropdown.Item
               key={`ddVideo_${camera.label}`}
               onClick={() => handleShowVideoCard(cIndex, true)}
             >
               {camera.label} <i className="fas fa-video" />
             </Dropdown.Item>,
-            cameraSetup.components.length > cIndex + 1 && <Dropdown.Divider />,
+            allCameras.length > cIndex + 1 && <Dropdown.Divider />,
           ])}
         </Dropdown.Menu>
       </Dropdown>
@@ -78,3 +85,12 @@ export default function BeamlineCamera(props) {
     </>
   );
 }
+
+function mapStateToProps(state) {
+  return {
+    argusStreams:
+      state.beamline.hardwareObjects.argus.attributes.camera_streams,
+  };
+}
+
+export default connect(mapStateToProps)(BeamlineCamera);

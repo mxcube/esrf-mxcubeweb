@@ -73,7 +73,7 @@ export function ArgusForm(props) {
         <Button
           variant="danger"
           onClick={() =>
-            sendExecuteCommand('argus', 'stop_process', { name: [key] })
+            sendExecuteCommand('argus', 'stop_process', { name: key })
           }
         >
           Stop
