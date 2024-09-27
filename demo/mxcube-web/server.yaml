@@ -19,6 +19,16 @@ server:
     - "ws://127.0.0.1:8000"
     - "ws://localhost:9090"
     - "http://localhost:9090"
+    - "ws://localhost:9091"
+    - "http://localhost:9091"
+    - "ws://localhost:9092"
+    - "http://localhost:9092"
+    - "ws://localhost:9093"
+    - "http://localhost:9093"
+    - "ws://localhost:9094"
+    - "http://localhost:9094"
+    - "ws://localhost:9095"
+    - "http://localhost:9095"
 
 sso:
   ISSUER: https://websso.esrf.fr/realms/ESRF/

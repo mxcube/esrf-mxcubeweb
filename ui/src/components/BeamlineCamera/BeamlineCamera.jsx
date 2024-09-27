@@ -38,7 +38,7 @@ function BeamlineCamera(props) {
         height: 1280,
         width: 960,
         label: key,
-        url: `ws://localhost:9090/ws/${value}`,
+        url: value,
       };
     });
     if (cameraSetup && cameraSetup.components.length > 0) {
