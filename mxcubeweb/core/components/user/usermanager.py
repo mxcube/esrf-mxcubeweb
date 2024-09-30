@@ -423,15 +423,10 @@ class UserManager(BaseUserManager):
         if inhouse and not (inhouse and is_local_host()):
             raise Exception("In-house only allowed from localhost")
 
-        non_inhouse_active_users = self.active_logged_in_users(exclude_inhouse=True)
-
         # Only allow other users to log-in if they are from the same proposal
-        # (making sure to exclude inhouse users who are always allowed to login)
-
         if (
-            (not inhouse)
-            and non_inhouse_active_users
-            and (login_id not in [p.split("-")[0] for p in non_inhouse_active_users])
+            active_users
+            and (login_id not in [p.split("-")[0] for p in active_users])
             and not HWR.beamline.lims.is_user_login_type()
         ):
             raise Exception("Another user is already logged in")
