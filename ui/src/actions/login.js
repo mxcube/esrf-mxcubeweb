@@ -7,7 +7,12 @@ import { fetchAvailableWorkflows } from '../api/workflow';
 import { fetchAvailableTasks, fetchQueueState } from '../api/queue';
 
 import { showErrorPanel, applicationFetched } from './general';
-import { fetchLoginInfo, sendLogIn, sendSignOut, sendSSOLogIn } from '../api/login';
+import {
+  fetchLoginInfo,
+  sendLogIn,
+  sendSignOut,
+  sendSSOLogIn,
+} from '../api/login';
 import { fetchDetectorInfo } from '../api/detector';
 import { fetchSampleChangerInitialState } from '../api/sampleChanger';
 import { fetchHarvesterInitialState } from '../api/harvester';

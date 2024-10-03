@@ -27,7 +27,7 @@ class SelectProposal extends React.Component {
     this.props.handleHide();
   }
 
-  selectProposal() {
+  handleSelectProposal() {
     this.props.selectProposal(this.state.pNumber);
   }
 
@@ -38,10 +38,10 @@ class SelectProposal extends React.Component {
     return `${session.code}-${session.number}`;
   }
 
-  onSessionSelected(session) {
+  handleOnSessionSelected(session) {
     this.setState({
       proposal: this.getProposalBySession(session),
-      session: session,
+      session,
       pId: session.session_id,
       pNumber: session.session_id,
     });
@@ -50,25 +50,25 @@ class SelectProposal extends React.Component {
   handleChange(event) {
     const filteredSessions = this.state.sessions.filter((s) => {
       return (
-        s.title.indexOf(event.target.value) !== -1 ||
-        s.number.indexOf(event.target.value) !== -1 ||
-        s.code.indexOf(event.target.value) !== -1
+        s.title.includes(event.target.value) ||
+        s.number.includes(event.target.value) ||
+        s.code.includes(event.target.value)
       );
     });
 
     this.setState({
       filter: event.target.value,
-      filteredSessions: filteredSessions,
+      filteredSessions,
     });
   }
 
   render() {
     /** sort by start date */
-    let sortedlist = this.state.filteredSessions.sort((a, b) =>
+    const sortedlist = this.state.filteredSessions.sort((a, b) =>
       a.actual_start_date < b.actual_start_date ? 1 : -1,
     );
 
-    const session = this.state.session;
+    const { session } = this.state;
 
     const scheduledSessions = sortedlist.filter(
       (s) => s.is_scheduled_beamline && s.is_scheduled_time,
@@ -87,15 +87,13 @@ class SelectProposal extends React.Component {
           <Modal.Title>Select a session</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <>
-            <Form.Control
-              type="text"
-              id="search_session"
-              placeholder="Search"
-              value={this.state.filter}
-              onChange={this.handleChange.bind(this)}
-            />
-          </>
+          <Form.Control
+            type="text"
+            id="search_session"
+            placeholder="Search"
+            value={this.state.filter}
+            onChange={this.handleChange.bind(this)}
+          />
           <br />
 
           <Tabs defaultActiveKey="scheduled" id="scheduled-tab">
@@ -109,8 +107,8 @@ class SelectProposal extends React.Component {
                   selectedSessionId={this.state.pId}
                   filter={this.state.filter}
                   params={{ showBeamline: false }}
-                  onSessionSelected={this.onSessionSelected}
-                ></SessionTable>
+                  onSessionSelected={this.handleOnSessionSelected}
+                />
               </div>
             </Tab>
             <Tab
@@ -123,8 +121,8 @@ class SelectProposal extends React.Component {
                   selectedSessionId={this.state.pId}
                   filter={this.state.filter}
                   params={{ showBeamline: true }}
-                  onSessionSelected={this.onSessionSelected}
-                ></SessionTable>
+                  onSessionSelected={this.handleOnSessionSelected}
+                />
               </div>
             </Tab>
           </Tabs>
@@ -137,7 +135,7 @@ class SelectProposal extends React.Component {
                 variant="warning"
                 className="float-end"
                 disabled={this.state.pNumber === null}
-                onClick={this.selectProposal}
+                onClick={this.handleSelectProposal}
               >
                 Reschedule
               </Button>
@@ -147,7 +145,7 @@ class SelectProposal extends React.Component {
               variant="danger"
               className="float-end"
               disabled // {this.state.pNumber === null}
-              onClick={this.selectProposal}
+              onClick={this.handleSelectProposal}
             >
               Move here
             </Button>
@@ -163,11 +161,11 @@ class SelectProposal extends React.Component {
               (session && session.is_scheduled_beamline === false) ||
               session.is_scheduled_time === false
             }
-            onClick={this.selectProposal}
+            onClick={this.handleSelectProposal}
           >
             {this.state.proposal === null
               ? 'Select Proposal'
-              : 'Select ' + this.state.proposal}
+              : `Select ${this.state.proposal}`}
           </Button>
         </Modal.Footer>
       </Modal>
