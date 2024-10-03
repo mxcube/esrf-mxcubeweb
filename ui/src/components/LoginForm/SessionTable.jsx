@@ -35,7 +35,11 @@ const getDateComponent = (startDate, startTime) => {
  */
 const getScheduledDateComponent = (session, startDate, startTime) => {
   if (session.is_rescheduled) {
-    return <del className={styles.time}>{getDateComponent(startDate, startTime)}</del>;
+    return (
+      <del className={styles.time}>
+        {getDateComponent(startDate, startTime)}
+      </del>
+    );
   }
   return getDateComponent(startDate, startTime);
 };
@@ -53,7 +57,7 @@ const getLinkBySession = (session) => {
   ].map((item) => {
     return (
       <p key={item.url}>
-        <a  href={item.url} className="p-1" target="_blank" rel="noreferrer">
+        <a href={item.url} className="p-1" target="_blank" rel="noreferrer">
           <LuExternalLink /> {item.title}
         </a>
       </p>
@@ -77,12 +81,12 @@ export default function SessionTable(props) {
         <tr>
           <th />
           {props.params.showBeamline && <th>Beamline</th>}
-         <th>Title</th>
-         <th>Start</th>
-         <th>End</th>
-         <th>Portal</th>
-         <th>User</th>
-         <th>Logbook</th>
+          <th>Title</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Portal</th>
+          <th>User</th>
+          <th>Logbook</th>
         </tr>
       </thead>
       <tbody>
@@ -104,34 +108,30 @@ export default function SessionTable(props) {
               {props.params.showBeamline && <td>{session.beamline_name}</td>}
               <td>{session.title}</td>
               <td>
-
-                  {getScheduledDateComponent(
-                    session,
-                    session.start_date,
-                    session.start_time,
+                {getScheduledDateComponent(
+                  session,
+                  session.start_date,
+                  session.start_time,
+                )}
+                <br />
+                {session.is_rescheduled &&
+                  getDateComponent(
+                    session.actual_start_date,
+                    session.actual_start_time,
                   )}
-                  <br />
-                  {session.is_rescheduled &&
-                    getDateComponent(
-                      session.actual_start_date,
-                      session.actual_start_time,
-                    )}
-
               </td>
               <td>
-
-                  {getScheduledDateComponent(
-                    session,
-                    session.end_date,
-                    session.end_time,
+                {getScheduledDateComponent(
+                  session,
+                  session.end_date,
+                  session.end_time,
+                )}
+                <br />
+                {session.is_rescheduled &&
+                  getDateComponent(
+                    session.actual_end_date,
+                    session.actual_end_time,
                   )}
-                  <br />
-                  {session.is_rescheduled &&
-                    getDateComponent(
-                      session.actual_end_date,
-                      session.actual_end_time,
-                    )}
-
               </td>
               <td>{getLinkBySession(session)[0]}</td>
               <td>{getLinkBySession(session)[1]}</td>
