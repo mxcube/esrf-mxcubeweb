@@ -855,9 +855,7 @@ mock==4.0.3 ; python_version >= "3.8" and python_version < "3.12" \
 mxcube-video-streamer==1.5.0 ; python_version >= "3.8" and python_version < "3.12" \
     --hash=sha256:998a8a909e9b69a55bb3776e56ae7725479ec3b196990bf15f6849c3fb824f37 \
     --hash=sha256:fd9d337aad522f60b69182050f9ddfe81d3d2490c2bc8e86ccc669f3e5855718
-mxcubecore==1.159.0 ; python_version >= "3.8" and python_version < "3.12" \
-    --hash=sha256:d17c01c7a8ccafeaffb1efa71fbf689a28eac65fa26a9c5da607cbd1eb3ff3b4 \
-    --hash=sha256:fc4ed237c3cc49fa5129d9d683dd5b68256a138c6217d8f1f84bade853e6191a
+mxcubecore @ git+https://github.com/mxcube/esrf-mxcubecore.git@10feab63d5ef565250a53bc54f66c54f19e4ddbd ; python_version >= "3.8" and python_version < "3.12"
 numpy==1.24.4 ; python_version >= "3.8" and python_version < "3.12" \
     --hash=sha256:04640dab83f7c6c85abf9cd729c5b65f1ebd0ccf9de90b270cd61935eef0197f \
     --hash=sha256:1452241c290f3e2a312c137a9999cdbf63f78864d63c79039bda65ee86943f61 \
