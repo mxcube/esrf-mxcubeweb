@@ -349,17 +349,6 @@ class Queue(ComponentBase):
             parameters["path"], parameters["fileName"]
         )
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
-
-        # Only add data from lims if explicitly asked for, since
-        # its a operation that can take some time.
-        # if include_lims_data:
-        #    limsres = HWR.beamline.lims.get_dc(lims_id)
-
-        # Always add link to data, (no request made)
-        # limsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
-
         dtype_label = qme.EXPERIMENT_TYPE._fields[node.experiment_type]
         dtype_label = "OSCILLATION" if dtype_label == "NATIVE" else dtype_label
         dtype_label = (
@@ -411,17 +400,6 @@ class Queue(ComponentBase):
             parameters["directory"], parameters["fileName"]
         )
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
-
-        # Only add data from lims if explicitly asked for, since
-        # its a operation that can take some time.
-        # if include_lims_data:
-        #    limsres = HWR.beamline.lims.get_dc(lims_id)
-
-        # Always add link to data, (no request made)
-        # limsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
-
         res = {
             "label": parameters["label"],
             "strategy_name": parameters["strategy_name"],
@@ -433,7 +411,6 @@ class Queue(ComponentBase):
             "queueID": queueID,
             "checked": node.is_enabled(),
             "state": state,
-            # "limsResultData": limsres,
         }
 
         return res
@@ -460,17 +437,6 @@ class Queue(ComponentBase):
             parameters["path"], parameters["fileName"]
         )
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
-
-        # Only add data from lims if explicitly asked for, since
-        # its a operation that can take some time.
-        # if include_lims_data:
-        #    limsres = HWR.beamline.lims.get_dc(lims_id)
-
-        # Always add link to data, (no request made)
-        # imsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
-
         res = {
             "label": parameters["label"],
             "type": "Workflow",
@@ -481,7 +447,6 @@ class Queue(ComponentBase):
             "queueID": queueID,
             "checked": node.is_enabled(),
             "state": state,
-            # "limsResultData": limsres,
         }
 
         return res
@@ -578,17 +543,6 @@ class Queue(ComponentBase):
         queueID = node._node_id
         enabled, state = self.get_node_state(queueID)
 
-        limsres = {}
-        lims_id = self.app.NODE_ID_TO_LIMS_ID.get(node._node_id, "null")
-
-        # Only add data from lims if explicitly asked for, since
-        # its a operation that can take some time.
-        # if include_lims_data:
-        #    limsres = HWR.beamline.lims.get_dc(lims_id)
-
-        # Always add link to data, (no request made)
-        # limsres["limsTaskLink"] = self.app.lims.get_dc_link(lims_id)
-
         originID, task = self._handle_diffraction_plan(node, sample_node)
 
         res = {
@@ -601,7 +555,6 @@ class Queue(ComponentBase):
             "taskIndex": self.node_index(node)["idx"],
             "queueID": node._node_id,
             "state": state,
-            # "limsResultData": limsres,
             "diffractionPlan": task,
             "diffractionPlanID": originID,
         }
