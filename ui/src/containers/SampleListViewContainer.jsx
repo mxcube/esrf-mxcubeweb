@@ -623,7 +623,7 @@ class SampleListViewContainer extends React.Component {
   }
 
   getSynchronizationDropDownList() {
-    if (this.props.loginData.limsName.length == 1) {
+    if (this.props.loginData.limsName.length === 1) {
       return (
         <TooltipTrigger
           id="sync-samples-tooltip"
@@ -634,10 +634,7 @@ class SampleListViewContainer extends React.Component {
             variant="outline-secondary"
             onClick={this.syncSamples}
           >
-            <i
-              className="fas fa-sync-alt"
-              style={{ marginRight: '0.5em' }}
-            />
+            <i className="fas fa-sync-alt" style={{ marginRight: '0.5em' }} />
             {this.props.loginData.limsName}
           </Button>
         </TooltipTrigger>
@@ -652,6 +649,7 @@ class SampleListViewContainer extends React.Component {
         <Dropdown.Menu>
           {this.props.loginData.limsName.map((lims) => (
             <TooltipTrigger
+              key={lims.name}
               tooltipContent={`Synchronise sample list with ${this.props.loginData.limsName[0].name}`}
             >
               <Dropdown.Item
