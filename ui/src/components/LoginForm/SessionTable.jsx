@@ -79,7 +79,6 @@ export default function SessionTable(props) {
     <Table bordered hover size="sm" responsive>
       <thead>
         <tr>
-          <th />
           {props.params.showBeamline && <th>Beamline</th>}
           <th>Title</th>
           <th>Start</th>
