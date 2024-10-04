@@ -106,9 +106,8 @@ export function ssoLogIn() {
 
 export function signOut() {
   return async (dispatch) => {
-    dispatch(resetLoginInfo());
     dispatch(applicationFetched(false));
-    await sendSignOut();
+    await sendSignOut().finally(() => dispatch(resetLoginInfo()));
   };
 }
 
