@@ -22,7 +22,7 @@ Cypress.Commands.add('takeControl', () => {
       cy.findByRole('button', { name: 'Continue' }).click();
       cy.findByRole('link', { name: /Remote/u, hidden: true }).click();
       cy.findByRole('button', { name: 'Take control' }).click();
-      cy.findByRole('button', { name: 'Hide' }).click();
+      // cy.findByRole('button', { name: 'Hide' }).click();
     }
   });
 });
