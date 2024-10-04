@@ -8,9 +8,9 @@ class SelectProposal extends React.Component {
   constructor(props) {
     super(props);
 
-    this.selectProposal = this.selectProposal.bind(this);
+    this.handleSelectProposal = this.handleSelectProposal.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
-    this.onSessionSelected = this.onSessionSelected.bind(this);
+    this.handleOnSessionSelected = this.handleOnSessionSelected.bind(this);
 
     this.state = {
       pId: 0,
