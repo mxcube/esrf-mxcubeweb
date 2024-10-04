@@ -1908,7 +1908,7 @@ tango = ["PyTango (>=9.3.6,<10.0.0)"]
 type = "git"
 url = "https://github.com/mxcube/esrf-mxcubecore.git"
 reference = "esrf-develop"
-resolved_reference = "b2e5933e2c2ed3e1f6b3c2054e89d0f20e1e8117"
+resolved_reference = "8983cd0c3f9b13875b738d855e398cda2c8528f8"
 
 [[package]]
 name = "myst-parser"
