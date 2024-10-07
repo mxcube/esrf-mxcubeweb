@@ -627,7 +627,7 @@ class SampleListViewContainer extends React.Component {
       return (
         <TooltipTrigger
           id="sync-samples-tooltip"
-          tooltipContent={`Synchronise sample list with ${this.props.loginData.limsName}`}
+          tooltipContent={`Synchronise sample list with ${this.props.loginData.limsName[0].name}`}
         >
           <Button
             className="nowrap-style"
@@ -635,7 +635,7 @@ class SampleListViewContainer extends React.Component {
             onClick={this.syncSamples}
           >
             <i className="fas fa-sync-alt" style={{ marginRight: '0.5em' }} />
-            {this.props.loginData.limsName}
+            {this.props.loginData.limsName[0].name}
           </Button>
         </TooltipTrigger>
       );
@@ -650,7 +650,7 @@ class SampleListViewContainer extends React.Component {
           {this.props.loginData.limsName.map((lims) => (
             <TooltipTrigger
               key={lims.name}
-              tooltipContent={`Synchronise sample list with ${this.props.loginData.limsName[0].name}`}
+              tooltipContent={`Synchronise sample list with ${lims.name}`}
             >
               <Dropdown.Item
                 key={lims.name}
@@ -800,7 +800,7 @@ class SampleListViewContainer extends React.Component {
                 id="limsSamples"
                 checked={this.getFilterOptionValue('limsSamples')}
                 onChange={this.sampleGridFilter}
-                label={`${this.props.loginData.limsName} Samples`}
+                label="Lims Samples"
               />
             </Col>
             <Col xs={3}>
@@ -845,22 +845,7 @@ class SampleListViewContainer extends React.Component {
           <Card.Header className="samples-grid-table-card-header">
             <Row className="samples-grid-table-row-header">
               <Col sm={5} className="d-flex">
-                <TooltipTrigger
-                  id="sync-samples-tooltip"
-                  tooltipContent="Synchronise sample list with {this.props.loginData.limsName}"
-                >
-                  <Button
-                    className="nowrap-style"
-                    variant="outline-secondary"
-                    onClick={this.syncSamples}
-                  >
-                    <i
-                      className="fas fa-sync-alt"
-                      style={{ marginRight: '0.5em' }}
-                    />
-                    {this.props.loginData.limsName}
-                  </Button>
-                </TooltipTrigger>
+                {this.getSynchronizationDropDownList()}
                 <span style={{ marginLeft: '1.5em' }} />
                 <Button
                   className="nowrap-style"
