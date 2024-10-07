@@ -22,12 +22,11 @@ export function ArgusForm(props) {
     commands: {},
   });
 
-  const showStart = (title, initArgs) => {
+  const showStart = (title) => {
     setStartState((prevState) => ({
       ...prevState,
       show: true,
       title,
-      initArgs,
     }));
   };
 
@@ -119,13 +118,13 @@ export function ArgusForm(props) {
             <span>No available processes</span>
           ) : (
             <div className={styles.typesContainer}>
-              {Object.keys(processes_info.available).map((type) => (
+              {Object.values(processes_info.available).map((type) => (
                 <Button
                   className={styles.typeButton}
                   variant="outlined"
                   key={`${type}-typeButton`}
                   onClick={() =>
-                    showStart(type, processes_info.available[type].args)
+                    showStart(type)
                   }
                 >
                   {capitalize(type)}

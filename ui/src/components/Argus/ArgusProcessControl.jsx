@@ -29,13 +29,7 @@ export default function ArgusProcessControl(props) {
 
   useEffect(() => {
     if (type === 'start') {
-      const data = { name: '' };
-      if (initArgs) {
-        initArgs.forEach((arg) => {
-          data[arg] = '';
-        });
-      }
-      setFormData(data);
+      setFormData({ name: '' });
     } else if (type === 'sendCommand') {
       if (!commands) {
         setFormData({});
@@ -90,7 +84,6 @@ export default function ArgusProcessControl(props) {
       sendExecuteCommand('argus', 'start_process', {
         name,
         type: title,
-        args: Object.values(args),
       });
     } else if (type === 'sendCommand') {
       const { selectedCommand } = availableCommands;
