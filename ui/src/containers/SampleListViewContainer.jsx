@@ -636,7 +636,7 @@ class SampleListViewContainer extends React.Component {
             onClick={this.syncSamples}
           >
             <i className="fas fa-sync-alt" style={{ marginRight: '0.5em' }} />
-            {this.props.loginData.limsName}
+            {this.props.loginData.limsName[0].name}
           </Button>
         </TooltipTrigger>
       );
