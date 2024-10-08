@@ -14,12 +14,12 @@ export function ArgusForm(props) {
   const [startState, setStartState] = useState({
     show: false,
     title: 'Default',
-    initArgs: [],
   });
-  const [sendCommandState, setSendCommandState] = useState({
+
+  const [settingsState, setSettingsState] = useState({
     show: false,
     title: 'Default',
-    commands: {},
+    settings: {},
   });
 
   const showStart = (title) => {
@@ -30,12 +30,12 @@ export function ArgusForm(props) {
     }));
   };
 
-  const showSendCommand = (title, commands) => {
-    setSendCommandState((prevState) => ({
+  const showSettingsState = (title, settings) => {
+    setSettingsState((prevState) => ({
       ...prevState,
       show: true,
       title,
-      commands,
+      settings,
     }));
   };
 
@@ -44,7 +44,7 @@ export function ArgusForm(props) {
       ...prevState,
       show: false,
     }));
-    setSendCommandState((prevState) => ({
+    setSettingsState((prevState) => ({
       ...prevState,
       show: false,
     }));
@@ -61,13 +61,27 @@ export function ArgusForm(props) {
   const runningButtons = (key) => {
     return (
       <div className={styles.processButtons}>
+        {Object.values(processes_info.running[key].commands).map((element) => (
+          <Button
+            key={`${key}-command-${element}`}
+            variant="primary"
+            onClick={() =>
+              sendExecuteCommand('argus', 'manage_process', {
+                name: key,
+                command: element,
+              })
+            }
+          >
+            {capitalize(element)}
+          </Button>
+        ))}
         <Button
-          variant="primary"
+          variant="secondary"
           onClick={() =>
-            showSendCommand(key, processes_info.running[key].commands)
+            showSettingsState(key, processes_info.running[key].settings)
           }
         >
-          Send Command
+          <i className="fa fa-cog" />
         </Button>
         <Button
           variant="danger"
@@ -75,7 +89,7 @@ export function ArgusForm(props) {
             sendExecuteCommand('argus', 'stop_process', { name: key })
           }
         >
-          Stop
+          X
         </Button>
       </div>
     );
@@ -90,14 +104,14 @@ export function ArgusForm(props) {
         sendExecuteCommand={sendExecuteCommand}
       />
       <ArgusProcessControl
-        state={sendCommandState}
-        type="sendCommand"
+        state={settingsState}
+        type="settings"
         hide={hideChildren}
         sendExecuteCommand={sendExecuteCommand}
       />
       <Modal
         id="ArgusModal"
-        show={show && !startState.show && !sendCommandState.show}
+        show={show && !startState.show && !settingsState.show}
         onHide={handleCancel}
       >
         <Modal.Header closeButton>
@@ -123,9 +137,7 @@ export function ArgusForm(props) {
                   className={styles.typeButton}
                   variant="outlined"
                   key={`${type}-typeButton`}
-                  onClick={() =>
-                    showStart(type)
-                  }
+                  onClick={() => showStart(type)}
                 >
                   {capitalize(type)}
                 </Button>

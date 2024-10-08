@@ -1,105 +1,76 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import { useDispatch } from 'react-redux';
 
-import { hideRecording, showRecording } from '../../actions/argus';
 import { capitalize } from './ArgusForm';
 
 import styles from './Argus.module.css';
 
+// helpful function to keep types in forms
+function convertToType(previousValue, item) {
+  if (Number.isInteger(previousValue)) {
+    return Number.parseInt(item, 10);
+  } else if (
+    !Number.isNaN(previousValue) &&
+    Number.parseFloat(previousValue) === previousValue
+  ) {
+    return Number.parseFloat(item);
+  } else if (typeof previousValue === 'object') {
+    try {
+      return JSON.parse(item);
+    } catch {
+      return item;
+    }
+  } else {
+    return item; // Keep it as a string by default
+  }
+}
+
 export default function ArgusProcessControl(props) {
   const { state, type, hide, sendExecuteCommand } = props;
-  const { show, title, initArgs, commands } = state;
+  const { show, title, settings } = state;
   const [formData, setFormData] = useState({});
-  const [availableCommands, setAvailableCommands] = useState({
-    selectedCommand: '',
-  });
-
-  const dispatch = useDispatch();
-
-  const setCommandData = (args) => {
-    const current_command_data = { wait_time: '5' };
-    if (args) {
-      args.forEach((arg) => {
-        current_command_data[arg] = '';
-      });
-    }
-    setFormData(current_command_data);
-  };
 
   useEffect(() => {
     if (type === 'start') {
       setFormData({ name: '' });
-    } else if (type === 'sendCommand') {
-      if (!commands) {
-        setFormData({});
-        setAvailableCommands({ selectedCommand: '' });
-        return;
-      }
-
-      const command_data = Object.values(commands).reduce(
-        (acc, { command, args }) => {
-          if (!acc[command]) {
-            acc[command] = [];
-          }
-          if (args) {
-            acc[command].push(...args);
-          }
-          return acc;
-        },
-        {},
-      );
-
-      const keys = Object.keys(command_data);
-      if (keys.length > 0) {
-        setCommandData(command_data[keys[0]]);
-        setAvailableCommands({ selectedCommand: keys[0], ...command_data });
-      } else {
-        setAvailableCommands({ selectedCommand: '' });
-      }
+    } else if (type === 'settings') {
+      setFormData(settings);
     }
-  }, [type, initArgs, commands]);
+  }, [type, settings]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleCommandSelection = (e) => {
-    setAvailableCommands((prevstate) => ({
-      ...prevstate,
-      selectedCommand: e.target.value,
-    }));
-    setCommandData(availableCommands[e.target.value]);
+    setFormData((prevData) => {
+      // keep the array structure if needed
+      if (Array.isArray(prevData[name])) {
+        return {
+          ...prevData,
+          [name]: value.split(',').map((item, index) => {
+            return convertToType(prevData[name][index], item);
+          }),
+        };
+      }
+      return {
+        ...prevData,
+        [name]: value,
+      };
+    });
   };
 
   const onSubmit = (e) => {
     e.preventDefault();
-    const { name, wait_time, ...args } = formData;
+    const { name, ...args } = formData;
 
     if (type === 'start') {
       sendExecuteCommand('argus', 'start_process', {
         name,
         type: title,
       });
-    } else if (type === 'sendCommand') {
-      const { selectedCommand } = availableCommands;
-      sendExecuteCommand('argus', 'manage_process', {
+    } else if (type === 'settings') {
+      sendExecuteCommand('argus', 'change_settings', {
         name: title,
-        command: selectedCommand,
-        wait_time: Number.parseInt(wait_time),
-        args: Object.values(args),
+        settings: args,
       });
-      // this is a special call to show/end the recording point on the argus button
-      // if a recording is started/ended
-      if (selectedCommand === 'start' && title === 'Recorder') {
-        dispatch(showRecording());
-      } else if (selectedCommand === 'stop' && title === 'Recorder') {
-        dispatch(hideRecording());
-      }
     }
 
     hide();
@@ -111,17 +82,6 @@ export default function ArgusProcessControl(props) {
         <Modal.Title>{`${capitalize(type)}: ${capitalize(title)}`}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {type === 'sendCommand' ? (
-          <Form.Select onChange={handleCommandSelection}>
-            {Object.keys(availableCommands).map((key) =>
-              key === 'selectedCommand' ? null : (
-                <option key={`${key}-option`}>{key}</option>
-              ),
-            )}
-          </Form.Select>
-        ) : (
-          <div />
-        )}
         <Form onSubmit={onSubmit}>
           <div className={styles.commandContainer}>
             {Object.keys(formData).map((key) => (
