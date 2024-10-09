@@ -1869,7 +1869,7 @@ resolved_reference = "c30decb2f61969a7915880f8271381f2a45c6ee6"
 
 [[package]]
 name = "mxcubecore"
-version = "1.160.0+esrf.1007-1"
+version = "1.163.0+esrf.1009-1"
 description = "Core libraries for the MXCuBE application"
 optional = false
 python-versions = ">=3.8,<3.12"
@@ -1907,8 +1907,8 @@ tango = ["PyTango (>=9.3.6,<10.0.0)"]
 [package.source]
 type = "git"
 url = "https://github.com/mxcube/esrf-mxcubecore.git"
-reference = "v1.160.0+esrf.1007-1"
-resolved_reference = "b9014988e36b9926528a8473fe306b89324965c3"
+reference = "v1.163.0+esrf-1009-1"
+resolved_reference = "d78a648d6a0385ee3127531edd5275e30f767eab"
 
 [[package]]
 name = "myst-parser"
@@ -3691,4 +3691,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "30a6fbb33a883a0a33ad97de15b41e2a2827b487a4ab5ea58fbd11e879272cb7"
+content-hash = "aa267ac25e95948f8ff9f97b9cfd1fa251ca537652b7df714e15cad5d5916763"
