@@ -8,6 +8,7 @@ import 'fabric';
 
 import OneAxisTranslationControl from '../MotorInput/OneAxisTranslationControl';
 import { HW_STATE } from '../../constants';
+import { sendTakeSnapshot } from '../../api/sampleview';
 
 import { find } from 'lodash';
 import styles from './SampleControls.module.css';
