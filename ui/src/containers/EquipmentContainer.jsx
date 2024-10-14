@@ -131,7 +131,8 @@ function EquipmentContainer(props) {
                 const obj = props.beamline.hardwareObjects[key];
                 if (
                   !Array.isArray(obj.commands) &&
-                  Object.values(obj.commands).length > 0
+                  Object.values(obj.commands).length > 0 &&
+                  key !== 'argus'
                 ) {
                   return (
                     <GenericEquipmentControl
