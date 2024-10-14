@@ -34,7 +34,10 @@ export default function ArgusProcessControl(props) {
     if (type === 'start') {
       setFormData({ name: '' });
     } else if (type === 'settings') {
-      setFormData(settings);
+      const data = { ...settings };
+      // prevent recording field, as it is read-only
+      delete data.recording;
+      setFormData(data);
     }
   }, [type, settings]);
 
