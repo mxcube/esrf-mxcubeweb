@@ -98,7 +98,22 @@ export default function ArgusProcessControl(props) {
               </Form.Label>
             ))}
           </div>
-          <div className={styles.submitButtonContainer}>
+          <div className={styles.settingsButtonsContainer}>
+            {type === 'settings' ? (
+              <Button
+                onClick={() => {
+                  sendExecuteCommand('argus', 'manage_process', {
+                    name: title,
+                    command: 'default_settings',
+                  });
+                  hide();
+                }}
+              >
+                Default Settings
+              </Button>
+            ) : (
+              <div />
+            )}
             <Button type="submit">Submit</Button>
           </div>
         </Form>
