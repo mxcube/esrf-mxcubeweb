@@ -420,10 +420,13 @@ class SampleView(ComponentBase):
 
     def centring_handle_click(self, x, y):
         if HWR.beamline.diffractometer.current_centring_procedure:
-            HWR.beamline.diffractometer.imageClicked(x, y, x, y)
+            HWR.beamline.diffractometer.image_clicked(x, y, x, y)
             self.centring_click()
         else:
-            if not self.centring_clicks_left():
+            # Number of centring clicks can still be negative if the user
+            # clicks very frequently on the image, added comparsion with lesser
+            # then 0 to be able to recover from this scenario.
+            if self.centring_clicks_left() <= 0:
                 self.centring_reset_click_count()
                 HWR.beamline.diffractometer.cancel_centring_method()
 
