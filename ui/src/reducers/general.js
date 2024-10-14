@@ -54,9 +54,6 @@ function generalReducer(state = INITIAL_STATE, action = {}) {
     case 'SHOW_ARGUS_FORM': {
       return { ...state, showArgusForm: action.show };
     }
-    case 'SHOW_RECORDING': {
-      return { ...state, showRecording: action.show };
-    }
     default: {
       return state;
     }

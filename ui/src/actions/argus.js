@@ -11,17 +11,3 @@ export function hideArgusForm() {
     show: false,
   };
 }
-
-export function showRecording() {
-  return {
-    type: 'SHOW_RECORDING',
-    show: true,
-  };
-}
-
-export function hideRecording() {
-  return {
-    type: 'SHOW_RECORDING',
-    show: false,
-  };
-}

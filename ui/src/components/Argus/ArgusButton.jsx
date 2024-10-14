@@ -34,11 +34,12 @@ function ArgusButton(props) {
 }
 
 function mapStateToProps(state) {
+  const { processes_info } = state.beamline.hardwareObjects.argus.attributes;
   return {
-    recording: state.general.showRecording,
-    running:
-      state.beamline.hardwareObjects.argus.attributes.processes_info
-        .closable_running,
+    recording: processes_info.running.Recorder
+      ? processes_info.running.Recorder.settings.recording
+      : false,
+    running: processes_info.closable_running,
   };
 }
 
