@@ -61,20 +61,31 @@ export function ArgusForm(props) {
   const runningButtons = (key) => {
     return (
       <div className={styles.processButtons}>
-        {Object.values(processes_info.running[key].commands).map((element) => (
-          <Button
-            key={`${key}-command-${element}`}
-            variant="primary"
-            onClick={() =>
-              sendExecuteCommand('argus', 'manage_process', {
-                name: key,
-                command: element,
-              })
+        {Object.values(processes_info.running[key].commands).map((element) => {
+          if (key === 'Recorder') {
+            const { recording } = processes_info.running[key].settings;
+            if (
+              (element === 'start' && recording) ||
+              (element === 'stop' && !recording)
+            ) {
+              return null;
             }
-          >
-            {capitalize(element)}
-          </Button>
-        ))}
+          }
+          return (
+            <Button
+              key={`${key}-command-${element}`}
+              variant="primary"
+              onClick={() =>
+                sendExecuteCommand('argus', 'manage_process', {
+                  name: key,
+                  command: element,
+                })
+              }
+            >
+              {capitalize(element)}
+            </Button>
+          );
+        })}
         <Button
           variant="secondary"
           onClick={() =>
