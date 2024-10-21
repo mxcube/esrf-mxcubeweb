@@ -33,19 +33,22 @@ function SnapshotControl(props) {
     canvas.setBackgroundImage(fimg);
     canvas.renderAll();
 
-    const imgDataURI = this.props.canvas
+    const imgDataURI = canvas
       .toDataURL({
         format: 'png',
         backgroundColor: null,
       })
       .split(',')[1];
 
-    const filename = `${proposal}-${currentSampleName}.jpeg`;
-    const processedImgBlob = await sendTakeSnapshot(imgDataURI);
-    download(filename, processedImgBlob);
-
     canvas.setBackgroundImage(0);
     canvas.renderAll();
+
+    const filename = `${proposal}-${currentSampleName}.jpeg`;
+    const processedImgBlob = await sendTakeSnapshot(imgDataURI);
+    download(
+      filename,
+      window.URL.createObjectURL(new Blob([processedImgBlob])),
+    );
   }, [canvas, currentSampleName, imageRatio, proposal]);
 
   useEffect(() => {
