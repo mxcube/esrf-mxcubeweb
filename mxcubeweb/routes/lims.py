@@ -22,11 +22,11 @@ from . import signals
 def init_route(app, server, url_prefix):  # noqa: C901
     bp = Blueprint("lims", __name__, url_prefix=url_prefix)
 
-    @bp.route("/synch_samples", methods=["GET"])
+    @bp.route("/synch_samples", methods=["POST"])
     @server.restrict
     def proposal_samples():
         try:
-            lims_name = request.args.get("limsname")
+            lims_name = request.get_json().get("lims", None)
             res = jsonify(app.lims.synch_with_lims(lims_name))
         except Exception as ex:
             logging.getLogger("MX3.HWR").error(str(ex))

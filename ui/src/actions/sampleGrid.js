@@ -80,12 +80,12 @@ export function getSamplesList() {
   };
 }
 
-export function syncSamples() {
+export function syncSamples(lims) {
   return async (dispatch) => {
     dispatch(showWaitDialog('Please wait', 'Synchronizing with ISPyB', true));
 
     try {
-      const json = await fetchLimsSamples();
+      const json = await fetchLimsSamples(lims);
       dispatch(updateSampleList(json.sampleList, json.sampleOrder));
       dispatch(setQueue(json));
     } catch (error) {
