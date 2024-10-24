@@ -632,7 +632,9 @@ class SampleListViewContainer extends React.Component {
           <Button
             className="nowrap-style"
             variant="outline-secondary"
-            onClick={this.syncSamples}
+            onClick={() =>
+              this.syncSamples(this.props.loginData.limsName[0].name)
+            }
           >
             <i className="fas fa-sync-alt" style={{ marginRight: '0.5em' }} />
             {this.props.loginData.limsName[0].name}
