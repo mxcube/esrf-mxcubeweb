@@ -22,7 +22,7 @@ jobs:
       - name: PyProject and create tag
         id: create-tag
         env:
-          VERSION: ${{ (echo $github.event.head_commit.message | cut -d ":" -f2) }}
+          VERSION: ${{ $(echo $github.event.head_commit.message | cut -d ":" -f2) }}
         run: |          
           poetry version ${{ env.VERSION }}
           git tag -a ${{ env.VERSION }} -m ${{ env.VERSION }}
