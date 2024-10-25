@@ -2,16 +2,15 @@
 
 # yamllint disable rule:line-length
 
-name: Publish on tag
+name: Release on tag
 
 on:       # yamllint disable-line rule:truthy
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]*'
+  push:   # yamllint disable-line rule:empty-values
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/prod' && "contains(github.event.head_commit.message, '[ci-release]')"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -20,6 +19,14 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+      - name: Set VERSION env
+        run: echo "VERSION=$(echo $github.event.head_commit.message | cut -d ":" -f2)" >> $GITHUB_ENV
+      - name: PyProject and create tag
+        id: create-tag
+        run: |
+          poetry version ${{ env.VERSION }}
+          git tag -a ${{ env.VERSION }} -m ${{ env.VERSION }}
+          git push prod
       - name: Publish package to PyPI
         id: publish-pacakge
         run: |
