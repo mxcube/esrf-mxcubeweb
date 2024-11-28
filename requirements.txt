@@ -916,9 +916,7 @@ mock==4.0.3 ; python_version >= "3.8" and python_version < "3.12" \
 mxcube-video-streamer==1.5.0 ; python_version >= "3.8" and python_version < "3.12" \
     --hash=sha256:998a8a909e9b69a55bb3776e56ae7725479ec3b196990bf15f6849c3fb824f37 \
     --hash=sha256:fd9d337aad522f60b69182050f9ddfe81d3d2490c2bc8e86ccc669f3e5855718
-mxcubecore==1.198.0 ; python_version >= "3.8" and python_version < "3.12" \
-    --hash=sha256:0abd5af4e0e33dc3a33e3ab1e280591e83a8e218f82aac822bcb952d6ad079d8 \
-    --hash=sha256:6a69ee3896b745bd2c91020a9050c09be161f3d8d0b6580327239dacec5c5a00
+mxcubecore @ git+https://github.com/mxcube/esrf-mxcubecore.git@cff7b325ca67cd54003664b0b4872c1dc3c30b20 ; python_version >= "3.8" and python_version < "3.12"
 numpy==1.24.4 ; python_version >= "3.8" and python_version < "3.12" \
     --hash=sha256:04640dab83f7c6c85abf9cd729c5b65f1ebd0ccf9de90b270cd61935eef0197f \
     --hash=sha256:1452241c290f3e2a312c137a9999cdbf63f78864d63c79039bda65ee86943f61 \
@@ -1224,8 +1222,8 @@ python-dotenv==1.0.1 ; python_version >= "3.8" and python_version < "3.12" \
 python-engineio==4.10.1 ; python_version >= "3.8" and python_version < "3.12" \
     --hash=sha256:166cea8dd7429638c5c4e3a4895beae95196e860bc6f29ed0b9fe753d1ef2072 \
     --hash=sha256:445a94004ec8034960ab99e7ce4209ec619c6e6b6a12aedcb05abeab924025c0
-python-ldap==3.4.3 ; python_version >= "3.8" and python_version < "3.12" \
-    --hash=sha256:ab26c519a0ef2a443a2a10391fa3c5cb52d7871323399db949ebfaa9f25ee2a0
+python-ldap==3.4.4 ; python_version >= "3.8" and python_version < "3.12" \
+    --hash=sha256:7edb0accec4e037797705f3a05cbf36a9fde50d08c8f67f2aef99a2628fab828
 python-socketio==5.11.4 ; python_version >= "3.8" and python_version < "3.12" \
     --hash=sha256:42efaa3e3e0b166fc72a527488a13caaac2cefc76174252486503bd496284945 \
     --hash=sha256:8b0b8ff2964b2957c865835e936310190639c00310a47d77321a594d1665355e
