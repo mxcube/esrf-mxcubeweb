@@ -405,6 +405,7 @@ class UserManager(BaseUserManager):
             "_login. proposal_tuple retrieved. Sessions=%s "
             % str(len(session_manager.sessions))
         )
+
         inhouse = self.is_inhouse_user(login_id)
 
         active_users = self.active_logged_in_users()
@@ -452,6 +453,7 @@ class UserManager(BaseUserManager):
     def _signout(self, sso_data={}):
         if self.app.CONFIG.sso.LOGOUT_URI:
             if not current_user.is_anonymous:
+                HWR.beamline.lims.remove_user(current_user.username)
                 refresh_token = current_user.refresh_token
             else:
                 refresh_token = sso_data.get("refresh_token", None)
