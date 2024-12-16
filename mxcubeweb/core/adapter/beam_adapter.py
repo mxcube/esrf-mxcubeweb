@@ -1,14 +1,15 @@
-from mxcubeweb.core.adapter.adapter_base import ActuatorAdapterBase
+from mxcubeweb.core.adapter.adapter_base import (
+    ActuatorAdapterBase,
+    default_resource_handler_config
+    )
 from mxcubeweb.core.models.adaptermodels import (
     HOBeamModel,
     HOBeamValueModel,
 )
-from mxcubeweb.core.util.adapterutils import export
-
 
 class BeamAdapter(ActuatorAdapterBase):
-    def __init__(self, ho, *args):
-        super(BeamAdapter, self).__init__(ho, *args)
+    def __init__(self, ho, role, app):
+        super(BeamAdapter, self).__init__(ho, role, app, default_resource_handler_config)
 
     def limits(self):
         return -1, -1
@@ -27,7 +28,7 @@ class BeamAdapter(ActuatorAdapterBase):
 
         return aperture_list, current_aperture
 
-    def _get_value(self) -> HOBeamValueModel:
+    def get_value(self) -> HOBeamValueModel:
         beam_ho = self._ho
 
         beam_info_dict = {
@@ -59,11 +60,9 @@ class BeamAdapter(ActuatorAdapterBase):
 
         return HOBeamValueModel(**{"value": beam_info_dict})
 
-    @export
     def get_size(self) -> HOBeamModel:
         pass
 
-    @export
     def set_size(self, value: HOBeamModel) -> HOBeamModel:
         pass
 

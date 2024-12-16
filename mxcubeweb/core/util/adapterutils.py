@@ -1,10 +1,3 @@
-def export(func):
-    func._export = True
-    func._export_name = func.__name__
-
-    return func
-
-
 def get_adapter_cls_from_hardware_object(ho):
     # This needs to be a direct import of DataPublisher otherwise the
     # is instance check below fails due to different "import paths" It

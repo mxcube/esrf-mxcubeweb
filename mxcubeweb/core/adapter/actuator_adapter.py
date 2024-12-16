@@ -1,11 +1,19 @@
-from mxcubeweb.core.adapter.adapter_base import ActuatorAdapterBase
+from mxcubeweb.core.adapter.adapter_base import (
+    ActuatorAdapterBase,
+)
 from mxcubeweb.core.models.adaptermodels import (
     FloatValueModel,
     HOActuatorValueChangeModel,
 )
-from mxcubeweb.core.util.adapterutils import export
 from mxcubeweb.core.util.networkutils import RateLimited
 
+
+from mxcubeweb.core.models.configmodels import AdapterResourceHandlerConfigModel
+
+resource_handler_config = AdapterResourceHandlerConfigModel( 
+    commands=["get_value", "set_value"],
+    attributes=["data"]
+)
 
 class ActuatorAdapter(ActuatorAdapterBase):
     """
@@ -13,12 +21,12 @@ class ActuatorAdapter(ActuatorAdapterBase):
     information on longer running processes.
     """
 
-    def __init__(self, ho, *args):
+    def __init__(self, ho, role, app, resource_handler_config = resource_handler_config):
         """
         Args:
             (object): Hardware object.
         """
-        super(ActuatorAdapter, self).__init__(ho, *args)
+        super(ActuatorAdapter, self).__init__(ho, role, app, resource_handler_config)
         self._event_rate = 4
 
         @RateLimited(self._event_rate)
@@ -36,7 +44,7 @@ class ActuatorAdapter(ActuatorAdapterBase):
     def _value_change(self, *args, **kwargs):
         self._vc(*args, **kwargs)
 
-    def _set_value(self, value: HOActuatorValueChangeModel):
+    def set_value(self, value: HOActuatorValueChangeModel):
         """
         Execute the sequence to set the value.
         Args:
@@ -50,8 +58,7 @@ class ActuatorAdapter(ActuatorAdapterBase):
         """
         self._ho.set_value(float(value.value))
 
-    @export
-    def _get_value(self) -> FloatValueModel:
+    def get_value(self) -> FloatValueModel:
         """
         Read the energy.
         Returns:

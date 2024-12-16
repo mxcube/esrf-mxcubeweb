@@ -11,12 +11,24 @@ from pydantic.v1 import (
     create_model,
 )
 
+from mxcubeweb.core.server.resource_handler import AdapterResourceHandler, AdapterResourceHandlerFactory
 from mxcubeweb.core.models.adaptermodels import (
     HOActuatorModel,
     HOModel,
 )
 from mxcubeweb.core.util.adapterutils import get_adapter_cls_from_hardware_object
+from mxcubeweb.core.models.configmodels import AdapterResourceHandlerConfigModel
 
+
+default_resource_handler_config = AdapterResourceHandlerConfigModel(
+    commands=[
+        "set_value",
+        "get_value",
+    ],
+    attributes=[
+        "data"
+    ]
+)
 
 class AdapterBase:
     """Hardware Object Adapter Base class"""
@@ -24,7 +36,9 @@ class AdapterBase:
     ATTRIBUTES = []
     METHODS = []
 
-    def __init__(self, ho, role, app):
+    ADAPTER_DICT = {}
+
+    def __init__(self, ho, role, app, resource_handler_config=None):
         """
         Args:
             (object): Hardware object to mediate for.
@@ -38,6 +52,29 @@ class AdapterBase:
         self._type = type(self).__name__.replace("Adapter", "").upper()
         self._unique = True
         self._msg = ""
+
+        cls_name = self.__class__.__name__.lower()
+
+        if not cls_name in self.ADAPTER_DICT:
+            self.ADAPTER_DICT[cls_name] = {}
+
+        if ho is not None:
+            self.ADAPTER_DICT[cls_name][ho.name()[1:]] = self
+
+        if resource_handler_config:
+            AdapterResourceHandlerFactory.create_or_get(
+                name=cls_name,
+                url_prefix="/mxcube/api/v0.1/hwobj/" + self._type.lower(),
+                adapter_dict=self.ADAPTER_DICT[cls_name],
+                app=self.app,
+                exports=resource_handler_config.exports,
+                commands=resource_handler_config.commands,
+                attributes=resource_handler_config.attributes,
+        )
+
+    @classmethod
+    def get_resource_handler(cls):
+        return AdapterBase.RESOURCE_HANDLER_DICT.get(cls.__name__, None)
 
     def get_adapter_id(self, ho=None):
         ho = self._ho if not ho else ho
@@ -53,12 +90,6 @@ class AdapterBase:
         self.app.mxcubecore._add_adapter(_id, adapter_cls, ho, adapter_instance)
 
         setattr(self, attr_name, adapter_instance)
-
-    def _set_value(self):
-        pass
-
-    def _get_value(self):
-        pass
 
     def execute_command(self, cmd_name, args):
         try:
@@ -205,19 +236,23 @@ class AdapterBase:
         exported_methods = {}
 
         # Get exported attributes from underlaying HardwareObject
-        if self._ho.exported_attributes:
-            exported_methods = self._ho.exported_attributes
+        # and only set display True for those methods that have
+        # been explicitly configured to be exported
+        configured_exported = self._ho.exported_attributes.keys()
 
-        for method_name in self.METHODS:
-            attr = getattr(self, method_name, None)
+        rh = AdapterResourceHandlerFactory.get_handler(self.__class__.__name__.lower())
 
-            if attr:
-                model = self._model_from_typehint(attr)
-                exported_methods[method_name] = {
-                    "signature": model["signature"],
-                    "schema": model["args"].schema_json(),
-                    "display": False,
-                }
+        if rh:
+            for export in rh.commands:
+                attr = getattr(self, export["attr"], None)
+
+                if inspect.ismethod(attr):
+                    model = self._model_from_typehint(attr)
+                    exported_methods[export["attr"]] = {
+                        "signature": model["signature"],
+                        "schema": model["args"].schema_json(),
+                        "display": export["attr"] in configured_exported,
+                    }
 
         return exported_methods
 
@@ -274,7 +309,7 @@ class AdapterBase:
         Signal handler to be used for sending the entire object to the client via
         socketIO
         """
-        data = self.dict()
+        data = self.data().dict()
 
         if hasattr(state, "name"):
             data["state"] = state.name
@@ -331,12 +366,8 @@ class AdapterBase:
             )
         return data
 
-    def data(self):
+    def data(self) -> HOModel:
         return HOModel(**self._dict_repr())
-
-    def dict(self):
-        return self.data().dict()
-
 
 class ActuatorAdapterBase(AdapterBase):
     def __init__(self, ho, *args):
@@ -365,28 +396,19 @@ class ActuatorAdapterBase(AdapterBase):
         self.emit_ho_value_changed(args[0])
 
     # Abstract method
-    def set_value(self, value):
+    def set_value(self, value) -> None:
         """
         Sets a value on underlying hardware object.
+
         Args:
             value(float): Value to be set.
-        Returns:
-            (str): The actual value, after being set.
         Raises:
             ValueError: When conversion or treatment of value fails.
             StopIteration: When a value change was interrupted (abort/cancel).
+        Emits:
+            hardware_object_value_changed with values over websocket
         """
-        try:
-            self._set_value(value)
-            data = self.dict()
-        except ValueError as ex:
-            self._available = False
-            data = self.dict()
-            data["state"] = "UNUSABLE"
-            data["msg"] = str(ex)
-            logging.getLogger("MX3.HWR").error("Error setting bl attribute: " + str(ex))
-
-        return data
+        pass
 
     # Abstract method
     def get_value(self):
@@ -397,7 +419,7 @@ class ActuatorAdapterBase(AdapterBase):
         Raises:
             ValueError: When value for any reason can't be retrieved.
         """
-        return self._get_value().value
+        #return self._get_value().value
 
     # Abstract method
     def stop(self):
@@ -428,7 +450,7 @@ class ActuatorAdapterBase(AdapterBase):
         data = super(ActuatorAdapterBase, self)._dict_repr()
 
         try:
-            data.update({"value": self.get_value(), "limits": self.limits()})
+            data.update({"value": self.get_value().value, "limits": self.limits()})
         except Exception as ex:
             logging.getLogger("MX3.HWR").exception(
                 f"Could not get dictionary representation of {self._ho.name()}"

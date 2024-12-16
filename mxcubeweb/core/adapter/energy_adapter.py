@@ -3,19 +3,24 @@ from mxcubecore import HardwareRepository as HWR
 from mxcubeweb.core.adapter.actuator_adapter import ActuatorAdapter
 from mxcubeweb.core.adapter.wavelength_adapter import WavelengthAdapter
 
+from mxcubeweb.core.models.configmodels import AdapterResourceHandlerConfigModel
 
+resource_handler_config = AdapterResourceHandlerConfigModel( 
+    commands=["get_value", "set_value"],
+    attributes=["data"]
+)
 class EnergyAdapter(ActuatorAdapter):
     """
     Adapter for Energy Hardware Object, a web socket is used to communicate
     information on longer running processes.
     """
 
-    def __init__(self, *args):
+    def __init__(self, ho, role, app):
         """
         Args:
             (object): Hardware object.
         """
-        super(EnergyAdapter, self).__init__(*args)
+        super(EnergyAdapter, self).__init__(ho, role, app, resource_handler_config)
         self._add_adapter("wavelength", self._ho, WavelengthAdapter)
         self._type = "ENERGY"
 
