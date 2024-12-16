@@ -41,7 +41,11 @@ function SelectProposal() {
     (s) => s.is_scheduled_beamline && s.is_scheduled_time,
   );
   const unscheduledSessions = filteredSessions.filter(
-    (s) => !s.is_scheduled_beamline || !s.is_scheduled_time,
+    (s) => s.is_scheduled_beamline && !s.is_scheduled_time,
+  );
+
+  const otherBeamlineSessions = filteredSessions.filter(
+    (s) => !s.is_scheduled_beamline && s.is_scheduled_time,
   );
 
   function handleHide() {
@@ -96,6 +100,19 @@ function SelectProposal() {
               <SessionTable
                 showBeamline
                 sessions={unscheduledSessions}
+                selectedSessionId={selectedSessionId}
+                onSessionSelected={setSelectedSession}
+              />
+            </div>
+          </Tab>
+          <Tab
+            eventKey="other-unscheduled"
+            title={`Other beamlines (${otherBeamlineSessions.length})`}
+          >
+            <div className={styles.table}>
+              <SessionTable
+                showBeamline
+                sessions={otherBeamlineSessions}
                 selectedSessionId={selectedSessionId}
                 onSessionSelected={setSelectedSession}
               />
