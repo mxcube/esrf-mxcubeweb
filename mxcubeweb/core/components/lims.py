@@ -188,12 +188,9 @@ class Lims(ComponentBase):
             session = HWR.beamline.lims.set_active_session_by_id(session_id)
             if session is None:
                 raise "No session selected on LIMS"
-        except BaseException as e:
-            import traceback
-
-            traceback.print_exc(file=sys.stdout)
-            logging.getLogger("MX3.HWR").info(
-                "No session candidate. Force signout. e=%s" % str(e)
+        except Exception:
+            logging.getLogger("MX3.HWR").exception(
+                "No session candidate. Force signout"
             )
             self.app.usermanager.signout()
             return False
