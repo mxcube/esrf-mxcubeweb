@@ -43,3 +43,6 @@ class DiffractometerAdapter(AdapterBase):
     ) -> bool:
         self._ho.set_chip_layout(layout_name)
         return True
+
+    def use_position_for_callibration(self) -> bool:
+        return self._ho.use_position_for_callibration()

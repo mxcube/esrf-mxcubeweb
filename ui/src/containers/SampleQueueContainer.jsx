@@ -30,9 +30,13 @@ import { showDialog } from '../actions/general';
 import { showWorkflowParametersDialog } from '../actions/workflow';
 
 import UserMessage from '../components/Notify/UserMessage';
+import SSXChipControl from '../components/SSXChip/SSXChipControl';
 import loader from '../img/loader.gif';
 import { prepareBeamlineForNewSample } from '../actions/beamline';
 import { mountSample, unmountSample } from '../actions/sampleChanger';
+
+import * as sampleViewActions from '../actions/sampleview'; // eslint-disable-line import/no-namespace
+import { executeCommand, setAttribute } from '../actions/beamline';
 
 class SampleQueueContainer extends React.Component {
   constructor(props) {
@@ -88,6 +92,27 @@ class SampleQueueContainer extends React.Component {
         : '';
     }
 
+    const grids = {};
+    const selectedGrids = [];
+
+    if (this.props.shapes !== undefined) {
+      Object.keys(this.props.shapes).forEach((key) => {
+        const shape = this.props.shapes[key];
+        switch (shape.t) {
+          case 'G': {
+            grids[shape.id] = shape;
+
+            if (shape.selected) {
+              selectedGrids.push(shape);
+            }
+
+            break;
+          }
+          // No default
+        }
+      });
+    }
+
     return (
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <QueueControl
@@ -134,6 +159,11 @@ class SampleQueueContainer extends React.Component {
             <Nav.Item>
               <Nav.Link eventKey="todo" className="queue-nav-link">
                 <b>Queued Samples ({todo.length})</b>
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="chip" className="queue-nav-link">
+                <i className="fas fa-braille" /> &nbsp; <b>Chip callibration</b>
               </Nav.Link>
             </Nav.Item>
           </Nav>
@@ -183,6 +213,22 @@ class SampleQueueContainer extends React.Component {
             showList={this.props.showList}
             prepareBeamlineForNewSample={this.props.prepareBeamlineForNewSample}
           />
+          <SSXChipControl
+            show={visibleList === 'chip'}
+            showForm={showForm}
+            currentSampleID={this.props.currentSampleID}
+            sampleData={this.props.sampleList[currentSampleID]}
+            defaultParameters={this.props.defaultParameters}
+            groupFolder={this.props.groupFolder}
+            hardwareObjects={this.props.hardwareObjects}
+            uiproperties={this.props.uiproperties.sample_view}
+            sampleViewActions={this.props.sampleViewActions}
+            grids={grids}
+            selectedGrids={selectedGrids}
+            setAttribute={this.props.setAttribute}
+            sendExecuteCommand={this.props.sendExecuteCommand}
+          />
+          {visibleList !== 'chip' && (
           <div className="queue-messages">
             <div className="queue-messages-title">
               <span
@@ -195,6 +241,7 @@ class SampleQueueContainer extends React.Component {
               <UserMessage messages={this.props.logRecords} />
             </div>
           </div>
+          )}
         </div>
       </div>
     );
@@ -208,6 +255,9 @@ function mapStateToProps(state) {
     visibleList: state.queueGUI.visibleList,
     queueStatus: state.queue.queueStatus,
     queue: state.queue.queue,
+    groupFolder: state.queue.groupFolder,
+    hardwareObjects: state.beamline.hardwareObjects,
+    uiproperties: state.uiproperties,
     autoMountNext: state.queue.autoMountNext,
     autoAddDiffPlan: state.queue.autoAddDiffPlan,
     centringMethod: state.queue.centringMethod,
@@ -222,6 +272,7 @@ function mapStateToProps(state) {
     plotsInfo: state.beamline.plotsInfo,
     selectedShapes: state.sampleview.selectedShapes,
     shapes: state.shapes,
+    defaultParameters: state.taskForm.defaultParameters,
   };
 }
 
@@ -266,6 +317,12 @@ function mapDispatchToProps(dispatch) {
       prepareBeamlineForNewSample,
       dispatch,
     ),
+
+    // Sample view actions
+    sampleViewActions: bindActionCreators(sampleViewActions, dispatch),
+
+    setAttribute: bindActionCreators(setAttribute, dispatch),
+    sendExecuteCommand: bindActionCreators(executeCommand, dispatch),
   };
 }
 

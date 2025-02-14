@@ -267,7 +267,7 @@ class GenericTaskForm extends React.Component {
   }
 
   render() {
-    const uiSchema = JSON.parse(this.props.uiSchema);
+    const uiSchema = this.props.uiSchema;
     const schema = this.setConstraintsFromDefualts(
       this.props.schema.user_collection_parameters,
     );
