@@ -55,7 +55,7 @@ class NStateAdapter(ActuatorAdapterBase):
         else:
             value = self._ho.get_value().name
 
-	return StrValueModel(value=value)
+        return StrValueModel(value=value)
 
     def msg(self):
         try:
