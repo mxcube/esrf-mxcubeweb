@@ -1095,13 +1095,18 @@ class SampleGridTableContainer extends React.Component {
   mountAndCollect() {
     let sampleData = null;
 
-    // If several samples selected mount the first one and add the others to the queue
-    this.props.order.some((sampleID) => {
-      if (this.props.selected[sampleID]) {
-        sampleData = this.props.sampleList[sampleID];
-      }
-      return this.props.selected[sampleID] === true;
-    });
+    // // If several samples selected mount the first one and add the others to the queue
+    // this.props.order.some((sampleID) => {
+    //   if (this.props.selected[sampleID]) {
+    //     sampleData = this.props.sampleList[sampleID];
+    //   }
+    //   return this.props.selected[sampleID] === true;
+    // });
+
+    if (Object.keys(this.props.selected).length > 0) {
+      const sid = Object.keys(this.props.selected)[0];
+      sampleData = this.props.sampleList[sid];
+    }
 
     if (sampleData) {
       this.props.mountSample(sampleData);
