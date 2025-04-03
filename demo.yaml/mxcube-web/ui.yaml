@@ -119,6 +119,8 @@ sample_view_video_controls:
       show: true
     - id: video_size
       show: true
+    - id: cameras
+      show: true
 
 beamline_setup:
   id: beamline_setup
