@@ -6,7 +6,7 @@ const INITIAL_STATE = {
   width: 659,
   height: 493,
   videoFormat: 'MJPEG',
-  videoHash: '',
+  videoHash: [],
   videoURL: '',
   sourceIsScalable: false,
   videoSizes: [],
@@ -24,6 +24,7 @@ const INITIAL_STATE = {
   videoMessageOverlay: { show: false, msg: '' },
   savedPointId: '',
   selectedShapes: [],
+  multiViews: [],
 };
 
 // eslint-disable-next-line complexity
@@ -137,15 +138,16 @@ function sampleViewReducer(state = INITIAL_STATE, action = {}) {
       };
     }
     case 'SET_INITIAL_STATE': {
-      return {
+      let newState = {
         ...state,
         width: action.data.camera.imageWidth,
         height: action.data.camera.imageHeight,
         videoFormat: action.data.camera.format,
         videoSizes: action.data.camera.videoSizes,
         sourceIsScalable: action.data.camera.sourceIsScalable,
-        videoHash: action.data.camera.videoHash,
+        videoHash: [action.data.camera.videoHash],
         videoURL: action.data.camera.videoURL,
+        mainStreamHash: action.data.camera.videoHash,
         apertureList: action.data.beamInfo.apertureList,
         currentAperture: action.data.beamInfo.currentAperture,
         beamPosition: action.data.beamInfo.position,
@@ -158,6 +160,23 @@ function sampleViewReducer(state = INITIAL_STATE, action = {}) {
         currentPhase: action.data.diffractometer.currentPhase,
         pixelsPerMm: action.data.camera.pixelsPerMm,
         sourceScale: action.data.camera.scale,
+      };
+      if (action.data.argus) {
+        newState = {
+          ...newState,
+          multiViews: action.data.argus.multi_views,
+          videoHash: [action.data.argus.main_camera_stream],
+          videoURL: action.data.argus.stream_proxy_url,
+          mainStreamHash: action.data.argus.main_camera_stream,
+        };
+      }
+      return newState;
+    }
+    case 'SET_VIDEO_SOURCE': {
+      return {
+        ...state,
+        videoURL: action.url,
+        videoHash: action.hash,
       };
     }
     default: {

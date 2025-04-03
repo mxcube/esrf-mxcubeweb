@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useLocation } from 'react-router-dom';
 
 import { showProposalsForm, signOut } from '../../actions/login';
+import ArgusButton from '../Argus/ArgusButton';
 import styles from './MXNavbar.module.css';
 
 function MXNavbar() {
@@ -64,8 +65,16 @@ function MXNavbar() {
             <Nav.Link as={NavLink} className={styles.navLink} to="/equipment">
               Equipment
             </Nav.Link>
+            <Nav.Link as={NavLink} className={styles.navLink} to="/cameras">
+              Cameras
+            </Nav.Link>
           </Nav>
           <Nav className={styles.subNav}>
+            <ArgusButton
+              onClick={() => {
+                toggle(false);
+              }}
+            />
             <Nav.Link as={NavLink} className={styles.navLink} to="/help">
               <span className="me-2 fas fa-lg fa-question-circle" />
               Help

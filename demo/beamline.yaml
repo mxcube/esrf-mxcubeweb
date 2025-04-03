@@ -65,6 +65,11 @@ objects:
   - online_processing: parallel_processing.xml
   - characterisation: characterisation.xml
 
+  # Video streaming:
+  # When Argus is used, make sure to set MXCUBE_STARTS_VIDEO_STREAM
+  # to false in mxcube-web/server.yaml
+  # - argus: argus.xml
+
   # - beam_realign: # Skipped - optional
 
 configuration:

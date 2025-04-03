@@ -148,6 +148,10 @@ function centringClicksLeft(clicksLeft) {
   return { type: 'CENTRING_CLICKS_LEFT', clicksLeft };
 }
 
+export function setVideoSource(url, hash) {
+  return { type: 'SET_VIDEO_SOURCE', url, hash };
+}
+
 export function rotateToShape(sid) {
   return async (dispatch) => {
     try {
