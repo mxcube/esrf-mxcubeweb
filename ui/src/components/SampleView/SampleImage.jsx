@@ -121,6 +121,15 @@ class SampleImage extends React.Component {
     }
 
     this.renderSampleView();
+
+    if (
+      this.props.videoHash.length !== 1 ||
+      this.props.mainStreamHash !== this.props.videoHash[0]
+    ) {
+      this.canvas.getElement().style.visibility = 'hidden';
+    } else {
+      this.canvas.getElement().style.visibility = 'visible';
+    }
   }
 
   componentWillUnmount() {
@@ -367,6 +376,9 @@ class SampleImage extends React.Component {
   }
 
   rightClick(e) {
+    if (this.canvas.getElement().style.visibility === 'hidden') {
+      return;
+    }
     e.preventDefault();
 
     const group = this.canvas.getActiveObject();
@@ -896,6 +908,13 @@ class SampleImage extends React.Component {
     this.configureGrid();
     this.updateGridResults();
 
+    const count = this.props.videoHash.length;
+    const cols = Math.ceil(Math.sqrt(count));
+    const rows = Math.ceil(count / cols);
+
+    const playerWidth = this.props.width / cols;
+    const playerHeight = this.props.height / rows;
+
     return (
       <div>
         <div className={styles.outsideWrapper} id="outsideWrapper">
@@ -915,7 +934,28 @@ class SampleImage extends React.Component {
               selectedGrids={this.props.selectedGrids.map((grid) => grid.id)}
             />
             <div className={styles.videoCanvasWrapper}>
-              <VideoPlayer />
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                }}
+              >
+                {this.props.videoHash.map((hash) => (
+                  <VideoPlayer
+                    key={`player-${hash}`}
+                    width={playerWidth}
+                    height={playerHeight}
+                    format={this.props.videoFormat}
+                    source={
+                      this.props.videoUrl
+                        ? `${this.props.videoUrl}/${hash}`
+                        : undefined
+                    }
+                  />
+                ))}
+              </div>
               <canvas
                 id="canvas"
                 className={styles.coveringCanvas}
@@ -967,6 +1007,10 @@ function mapStateToProps(state) {
     beamShape: state.sampleview.beamShape,
     beamSize: state.sampleview.beamSize,
     videoMessageOverlay: state.sampleview.videoMessageOverlay,
+    videoUrl: state.sampleview.videoURL,
+    videoHash: state.sampleview.videoHash,
+    videoFormat: state.sampleview.videoFormat,
+    mainStreamHash: state.sampleview.mainStreamHash,
   };
 }
 

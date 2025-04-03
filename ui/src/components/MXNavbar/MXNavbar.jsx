@@ -66,6 +66,9 @@ function MXNavbar() {
             <Nav.Link as={NavLink} className={styles.navLink} to="/equipment">
               Equipment
             </Nav.Link>
+            <Nav.Link as={NavLink} className={styles.navLink} to="/cameras">
+              Cameras
+            </Nav.Link>
           </Nav>
           <Nav className={styles.subNav}>
             <ArgusButton
