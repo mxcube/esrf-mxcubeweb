@@ -8,10 +8,7 @@ export default function UserMessage() {
   return (
     <div id="usermessages" className={styles.messageBody}>
       {[...messages].reverse().map((message) => (
-        <div
-          key={`${message.timestamp}`}
-          className={`${styles.message} ${styles[message.severity]}`}
-        >
+        <div className={`${styles.message} ${styles[message.severity]}`}>
           {message.severity === 'INFO' ? (
             <span className="fas fa-lg fa-check-circle" />
           ) : (
