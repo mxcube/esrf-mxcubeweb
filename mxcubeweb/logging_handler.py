@@ -4,7 +4,7 @@ import uuid
 
 class MX3LoggingHandler(logging.handlers.BufferingHandler):
     def __init__(self, server):
-        super().__init__(1000)
+        super().__init__(100)
         self.server = server
 
         @server.flask_socketio.on("connect", namespace="/logging")
