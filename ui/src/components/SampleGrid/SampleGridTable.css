@@ -82,6 +82,11 @@
 
 .samples-grid-table-li {
   min-width: 283px;
+  /* NBNB to force the max width of the puck column, to avoid a rather strange
+     rendering issue. An arbitrary puck starts to grow endlessly (width), without
+     apparent reason.
+  */
+  max-width: 500px;
   margin: auto auto 6px 0;
   z-index: 2 !important;
   list-style-type: none;
