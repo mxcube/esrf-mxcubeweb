@@ -32,12 +32,14 @@ default_resource_handler_config = AdapterResourceHandlerConfigModel(
 
 class AdapterBase:
     """Hardware Object Adapter Base class"""
-
+    # List of supported HO base classes (or callable for more advanced matching)
+    SUPPORTED_TYPES = []
+    ADAPTER_DICT = {}
     ATTRIBUTES = []
     METHODS = []
 
-    ADAPTER_DICT = {}
-
+    _SUBCLASSES = []
+    
     def __init__(self, ho, role, app, resource_handler_config=None):
         """
         Args:
@@ -71,6 +73,14 @@ class AdapterBase:
                 commands=resource_handler_config.commands,
                 attributes=resource_handler_config.attributes,
         )
+
+    @classmethod
+    def can_adapt(cls, ho):
+        return any(isinstance(ho, t) for t in cls.SUPPORTED_TYPES)
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        AdapterBase._SUBCLASSES.append(cls)
 
     @classmethod
     def get_resource_handler(cls):

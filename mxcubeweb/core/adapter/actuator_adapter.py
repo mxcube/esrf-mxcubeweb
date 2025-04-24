@@ -1,3 +1,5 @@
+from mxcubecore.HardwareObjects.abstract import AbstractActuator
+
 from mxcubeweb.core.adapter.adapter_base import (
     ActuatorAdapterBase,
 )
@@ -20,6 +22,8 @@ class ActuatorAdapter(ActuatorAdapterBase):
     Adapter for Energy Hardware Object, a web socket is used to communicate
     information on longer running processes.
     """
+
+    SUPPORTED_TYPES = [AbstractActuator.AbstractActuator]
 
     def __init__(self, ho, role, app, resource_handler_config = resource_handler_config):
         """

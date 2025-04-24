@@ -1,3 +1,5 @@
+from mxcubecore.HardwareObjects.abstract import AbstractBeam
+
 from mxcubeweb.core.adapter.adapter_base import (
     ActuatorAdapterBase,
     default_resource_handler_config
@@ -8,6 +10,8 @@ from mxcubeweb.core.models.adaptermodels import (
 )
 
 class BeamAdapter(ActuatorAdapterBase):
+    SUPPORTED_TYPES = [AbstractBeam.AbstractBeam]
+
     def __init__(self, ho, role, app):
         super(BeamAdapter, self).__init__(ho, role, app, default_resource_handler_config)
 

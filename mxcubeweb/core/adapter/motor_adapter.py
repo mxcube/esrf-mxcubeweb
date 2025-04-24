@@ -1,3 +1,5 @@
+from mxcubecore.HardwareObjects.abstract import AbstractMotor
+
 from mxcubeweb.core.adapter.adapter_base import ActuatorAdapterBase
 from mxcubeweb.core.models.adaptermodels import (
     FloatValueModel,
@@ -18,6 +20,8 @@ resource_handler_config = AdapterResourceHandlerConfigModel(
 )
 
 class MotorAdapter(ActuatorAdapterBase):
+    SUPPORTED_TYPES = [AbstractMotor.AbstractMotor]
+
     def __init__(self, ho, role, app):
         """
         Args:

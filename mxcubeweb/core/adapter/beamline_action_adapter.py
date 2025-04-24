@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from mxcubecore.HardwareObjects.BeamlineActions import BeamlineActions
 
 from mxcubeweb.core.adapter.adapter_base import ActuatorAdapterBase
 from mxcubeweb.core.models.adaptermodels import (
@@ -10,6 +11,8 @@ from mxcubeweb.core.models.adaptermodels import (
 
 
 class BeamlineActionAdapter(ActuatorAdapterBase):
+    SUPPORTED_TYPES = [BeamlineActions]
+
     def __init__(self, ho, *args, **kwargs):
         """
         Args:

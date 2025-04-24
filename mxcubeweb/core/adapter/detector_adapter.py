@@ -1,3 +1,4 @@
+from mxcubecore.HardwareObjects.abstract import AbstractDetector
 from mxcubeweb.core.adapter.adapter_base import AdapterBase
 from mxcubeweb.core.models.configmodels import AdapterResourceHandlerConfigModel
 
@@ -7,8 +8,9 @@ resource_handler_config = AdapterResourceHandlerConfigModel(
     attributes=["data"]
 )
 
-
 class DetectorAdapter(AdapterBase):
+    SUPPORTED_TYPES = [AbstractDetector.AbstractDetector]
+
     def __init__(self, ho, role, app):
         """
         Args:

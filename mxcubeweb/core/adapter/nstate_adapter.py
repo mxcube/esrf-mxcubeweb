@@ -1,6 +1,11 @@
 import logging
 from enum import Enum
 
+from mxcubecore.HardwareObjects.abstract import (
+    AbstractNState,
+    AbstractShutter,
+)
+
 from mxcubeweb.core.adapter.adapter_base import ActuatorAdapterBase
 from mxcubeweb.core.models.adaptermodels import (
     HOActuatorValueChangeModel,
@@ -17,6 +22,11 @@ resource_handler_config = AdapterResourceHandlerConfigModel(
 
 
 class NStateAdapter(ActuatorAdapterBase):
+    SUPPORTED_TYPES = [
+        AbstractNState.AbstractNState,
+        AbstractShutter.AbstractShutter,
+    ]
+
     def __init__(self, ho, role, app):
         """
         Args:

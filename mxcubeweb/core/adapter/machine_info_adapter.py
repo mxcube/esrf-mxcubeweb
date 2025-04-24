@@ -1,4 +1,5 @@
 from mxcubecore.BaseHardwareObjects import HardwareObjectState
+from mxcubecore.HardwareObjects.abstract import AbstractMachineInfo
 
 from mxcubeweb.core.adapter.adapter_base import ActuatorAdapterBase
 from mxcubeweb.core.models.adaptermodels import HOMachineInfoModel
@@ -7,6 +8,7 @@ from mxcubeweb.core.util.networkutils import RateLimited
 
 class MachineInfoAdapter(ActuatorAdapterBase):
     """Adapter for MachineInfo like objects"""
+    SUPPORTED_TYPES = [AbstractMachineInfo.AbstractMachineInfo]
 
     def __init__(self, ho, *args):
         """
