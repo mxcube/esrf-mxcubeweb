@@ -16,7 +16,6 @@ from mxcubeweb.core.models.adaptermodels import (
     HOActuatorModel,
     HOModel,
 )
-from mxcubeweb.core.util.adapterutils import get_adapter_cls_from_hardware_object
 from mxcubeweb.core.models.configmodels import AdapterResourceHandlerConfigModel
 
 
@@ -90,11 +89,7 @@ class AdapterBase:
         ho = self._ho if not ho else ho
         return self.app.mxcubecore._get_adapter_id(ho)
 
-    def _add_adapter(self, attr_name, ho, adapter_cls=None):
-        adapter_cls = (
-            adapter_cls if adapter_cls else get_adapter_cls_from_hardware_object(ho)
-        )
-
+    def _add_adapter(self, attr_name, ho, adapter_cls):
         _id = f"{self.get_adapter_id()}.{attr_name}"
         adapter_instance = adapter_cls(ho, _id, self.app)
         self.app.mxcubecore._add_adapter(_id, adapter_cls, ho, adapter_instance)

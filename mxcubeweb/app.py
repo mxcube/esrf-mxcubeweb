@@ -32,7 +32,6 @@ from mxcubeweb.core.components.samplechanger import SampleChanger
 from mxcubeweb.core.components.sampleview import SampleView
 from mxcubeweb.core.components.workflow import Workflow
 from mxcubeweb.core.models.configmodels import UIComponentModel
-from mxcubeweb.core.util.adapterutils import get_adapter_cls_from_hardware_object
 from mxcubeweb.logging_handler import MX3LoggingHandler
 from mxcubeweb.core.server.resource_handler import AdapterResourceHandlerFactory
        
