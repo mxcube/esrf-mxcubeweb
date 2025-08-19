@@ -226,10 +226,19 @@ def init_route(app, server, url_prefix):  # noqa: C901
         """
         pos = json.loads(request.data).get("clickPos", None)
 
-        data = app.sample_view.centring_handle_click(pos["x"], pos["y"])
+        try:
+            data = app.sample_view.centring_handle_click(pos["x"], pos["y"])
+        except Exception:
+            logging.getLogger("MX3.HWR").exception("")
+            resp = (
+                "Error while centring, please try again",
+                409,
+                {"Content-Type": "application/json"},
+            )
+        else:
+            resp = jsonify(data)
+            resp.status_code = 200            
 
-        resp = jsonify(data)
-        resp.status_code = 200
         return resp
 
     @bp.route("/centring/accept", methods=["PUT"])

@@ -19,6 +19,7 @@ class SampleView(ComponentBase):
         super().__init__(app, config)
         self._click_count = 0
         self._click_limit = 3
+        self._error = False
         self._centring_point_id = None
 
         HWR.beamline.sample_view.connect("shapesChanged", self._emit_shapes_updated)
@@ -128,6 +129,8 @@ class SampleView(ComponentBase):
 
             if self.app.AUTO_MOUNT_SAMPLE:
                 HWR.beamline.diffractometer.accept_centring()
+        else:
+            self._error = True
 
     def init_signals(self):
         """
@@ -299,6 +302,8 @@ class SampleView(ComponentBase):
             :statuscode: 409: error
         """
         if HWR.beamline.diffractometer.is_ready():
+            self.centring_reset_click_count()
+            self._error = False
             if HWR.beamline.diffractometer.current_centring_procedure:
                 logging.getLogger("user_level_log").info(
                     "Aborting current centring ..."
@@ -313,7 +318,6 @@ class SampleView(ComponentBase):
                 HWR.beamline.diffractometer.CENTRING_METHOD_MANUAL
             )
 
-            self.centring_reset_click_count()
         else:
             logging.getLogger("user_level_log").warning(
                 "Diffractometer is busy, cannot start centering"
@@ -332,20 +336,18 @@ class SampleView(ComponentBase):
             logging.getLogger("MX3.HWR").warning("Canceling centring failed")
 
     def centring_handle_click(self, x, y):
+        if self._error:
+            raise RuntimeError("Error while centring, please try again")
+        
         if HWR.beamline.diffractometer.current_centring_procedure:
             try:
                 HWR.beamline.diffractometer.image_clicked(x, y, x, y)
                 self.centring_click()
             except Exception:
-                return {"clicksLeft": -1}
+                raise
         else:
             if not self.centring_clicks_left():
-                self.centring_reset_click_count()
-                HWR.beamline.diffractometer.cancel_centring_method()
-
-                HWR.beamline.diffractometer.start_centring_method(
-                    HWR.beamline.diffractometer.CENTRING_METHOD_MANUAL
-                )
+                return self.start_manual_centring()
 
         return {"clicksLeft": self.centring_clicks_left()}
 
