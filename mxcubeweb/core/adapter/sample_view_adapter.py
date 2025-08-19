@@ -53,6 +53,7 @@ class SampleViewAdapter(AdapterBase):
         self._click_count = 0
         self._click_limit = int(HWR.beamline.config.click_centring_num_clicks or 3)
         self._centring_point_id = None
+        self._error = False
 
         self._ho.connect("shapesChanged", self._emit_shapes_updated)
         self._ho.connect("newGridResult", self._handle_grid_result)
@@ -145,6 +146,8 @@ class SampleViewAdapter(AdapterBase):
 
             if self.app.AUTO_MOUNT_SAMPLE:
                 HWR.beamline.diffractometer.accept_centring()
+        else:
+            self._error = True
 
     def _centring_started(self, method, *args):  # noqa: ARG002
         msg = {"method": method}
@@ -393,6 +396,9 @@ class SampleViewAdapter(AdapterBase):
         return {}
 
     def click(self, x: float, y: float):
+        if self._error:
+            raise RuntimeError("Error while centring, please try again")
+
         if HWR.beamline.diffractometer.current_centring_procedure:
             try:
                 HWR.beamline.diffractometer.image_clicked(x, y)
@@ -437,6 +443,8 @@ class SampleViewAdapter(AdapterBase):
             clicksLeft
         """
         if HWR.beamline.diffractometer.is_ready():
+            self.centring_reset_click_count()
+            self._error = False
             if HWR.beamline.diffractometer.current_centring_procedure:
                 logging.getLogger("user_level_log").info(
                     "Aborting current centring ..."
@@ -451,7 +459,6 @@ class SampleViewAdapter(AdapterBase):
                 HWR.beamline.diffractometer.CENTRING_METHOD_MANUAL
             )
 
-            self.centring_reset_click_count()
         else:
             logging.getLogger("user_level_log").warning(
                 "Diffractometer is busy, cannot start centering"
