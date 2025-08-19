@@ -46,9 +46,12 @@ export function startBeamlineAction(cmdName, parameters, showOutput = true) {
       dispatch(showActionOutput(cmdName));
     }
 
-    sendExecuteCommand('beamlineaction', 'beamline_actions', 'run_action', {
-      cmd: cmdName,
-      parameters,
+    sendExecuteCommand('beamlineaction', 'beamline_actions', 'run_action',
+      {
+        value : {
+          cmd: cmdName,
+          parameters,
+      }
     });
   };
 }
