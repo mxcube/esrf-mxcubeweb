@@ -173,7 +173,7 @@ export function recordCentringClick(x, y) {
     const { clicksLeft } = json;
     dispatch(centringClicksLeft(clicksLeft));
 
-    let msg = `${general.clickCentringNumClicks}-Click Centring: <br />`;
+    let msg = `Click Centring: <br />`;
     if (clicksLeft === 0) {
       msg += 'Save centring or clicking on screen to restart';
     } else if (clicksLeft === -1) {
