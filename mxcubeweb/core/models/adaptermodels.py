@@ -86,6 +86,10 @@ class SampleChangerCommandInputModel(BaseModel):
     arguments: str | None
 
 
+class ChipCalibrationInputModel(BaseModel):
+    data: dict
+
+
 class FrontEndStackTraceModel(BaseModel):
     stack: str
     state: dict
