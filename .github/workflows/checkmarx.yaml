@@ -1,5 +1,14 @@
+---
+
 name: vorpal-reviewdog
-on: [pull_request]
+
+on: pull_request
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  
 jobs:
   vorpal:
     runs-on: ubuntu-latest
