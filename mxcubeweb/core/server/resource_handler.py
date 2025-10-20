@@ -5,6 +5,8 @@ from collections.abc import Callable
 from functools import reduce
 from typing import ClassVar
 
+from flask_login import current_user
+
 from flask import Blueprint, Response, jsonify, request
 from pydantic import (
     BaseModel,
@@ -268,13 +270,18 @@ class ResourceHandler:
 
         # Call the view function with validated data
         try:
+            log.debug(f"{current_user.username} calling {handler_obj.__class__.__name__}.{export['attr']} with {validated_data}")
             result = handler_func(**validated_data)
         except Exception:
-            msg = "Exception raised when calling view function"
+            log.debug(f"{current_user.username} calling {handler_obj.__class__.__name__}.{export['attr']} error")
+            msg = f"Exception raised when calling {handler_obj.__class__.__name__}.{export['attr']}"
             log.exception(msg)
-            return jsonify({"error": msg}), 500
+
+            error = f"Error when calling {handler_obj.__class__.__name__}.{export['attr']}"
+            return jsonify({"error": error}), 500
         else:
             # Handle and serialize the result
+            log.debug(f"{current_user.username} calling {handler_obj.__class__.__name__}.{export['attr']} sucessfull -> {result}")
             return self._handle_view_result(result)
 
     def _assert_valid_type_arguments(self, export):
