@@ -397,7 +397,8 @@ class SampleViewAdapter(AdapterBase):
 
     def click(self, x: float, y: float):
         if self._error:
-            raise RuntimeError("Error while centring, please try again")
+            msg = "Error while centring, please try again"
+            raise RuntimeError(msg)
 
         if HWR.beamline.diffractometer.current_centring_procedure:
             try:
