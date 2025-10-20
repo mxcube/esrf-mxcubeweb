@@ -13,6 +13,7 @@ from flask import (
 from flask_login import current_user
 from flask_socketio import SocketIO
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_login import current_user
 
 from mxcubeweb.core.components.user.database import (
     UserDatastore,
