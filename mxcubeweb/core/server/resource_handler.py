@@ -5,6 +5,8 @@ from collections.abc import Callable
 from functools import reduce
 from typing import ClassVar
 
+from flask_login import current_user
+
 from flask import Blueprint, Response, jsonify, request
 from flask_login import current_user
 from pydantic import (
