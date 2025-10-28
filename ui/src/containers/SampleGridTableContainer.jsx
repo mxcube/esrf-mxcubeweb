@@ -828,15 +828,7 @@ export default function SampleGridTableContainer(props) {
   }
 
   function mountAndCollect() {
-    let sampleData = null;
-
-    // If several samples selected mount the first one and add the others to the queue
-    order.some((sampleID) => {
-      if (selected[sampleID]) {
-        sampleData = sampleList[sampleID];
-      }
-      return selected[sampleID] === true;
-    });
+    const sampleData = sampleList[Object.keys(selected)[0]];
 
     if (sampleData) {
       dispatch(mountSample(sampleData));
