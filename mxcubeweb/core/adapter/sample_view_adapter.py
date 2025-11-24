@@ -75,9 +75,8 @@ class SampleViewAdapter(AdapterBase):
             self._queue_execution_finished_handler,
         )
 
-    def _queue_execution_finished_handler(entry, queue_state=None):
+    def _queue_execution_finished_handler(self, queue_state=None):  # noqa: ARG002
         self._emit_shapes_updated()
-    
 
     def _centring_add_current_point(self, *args):
         shape = self._ho.get_shape(self._centring_point_id)
@@ -391,7 +390,7 @@ class SampleViewAdapter(AdapterBase):
             logging.getLogger("user_level_log").info("User canceled centring")
             HWR.beamline.diffractometer.cancel_centring_method()
             self.centring_remove_current_point()
-        except Exception:
+        except Exception:  # noqa: BLE001
             logging.getLogger("MX3.HWR").warning("Canceling centring failed")
 
         return {}
