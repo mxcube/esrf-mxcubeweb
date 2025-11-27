@@ -422,7 +422,7 @@ class SampleViewAdapter(AdapterBase):
         return {}
 
     def move_to_beam(self, x: float, y: float):
-        self._ho.move_to_beam(x, y)
+        HWR.beamline.diffractometer.move_to_beam(x, y)
         return {}
 
     def start_auto_centring(self):
