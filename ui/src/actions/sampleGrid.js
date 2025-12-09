@@ -4,7 +4,7 @@ import { showErrorPanel } from './general';
 import { setQueue } from './queue';
 import { hideWaitDialog, showWaitDialog } from './waitDialog';
 
-function updateSampleList(sampleList, order) {
+export function updateSampleList(sampleList, order) {
   return { type: 'UPDATE_SAMPLE_LIST', sampleList, order };
 }
 

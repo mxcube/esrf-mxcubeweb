@@ -33,6 +33,7 @@ import {
 import { collapseItem, showResumeQueueDialog } from './actions/queueGUI';
 import { addChatMessage, getRaState } from './actions/remoteAccess';
 import {
+  setContents,
   setLoadedSample,
   setSCGlobalState,
   setSCState,
@@ -431,6 +432,10 @@ class ServerIO {
 
     this.hwrSocket.on('harvester_contents_update', () => {
       dispatch(updateHarvesterContents());
+    });
+
+    this.hwrSocket.on('sc_contents_update', (data) => {
+      dispatch(data.content);
     });
   }
 
