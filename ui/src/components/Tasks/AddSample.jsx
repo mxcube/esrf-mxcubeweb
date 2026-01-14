@@ -85,7 +85,7 @@ function AddSample() {
                 {errors.proteinAcronym?.message}
               </Form.Control.Feedback>
             </Col>
-          </Form.Group>	  
+          </Form.Group>
           <Form.Group as={Row} className="mb-3" controlId="sampleName">
             <Col sm={4}>
               <Form.Label column>Sample name</Form.Label>
