@@ -2,6 +2,8 @@ import io
 import logging
 from typing import ClassVar
 
+from gevent.lock import RLock
+
 from flask import send_file
 from mxcubecore import HardwareRepository as HWR
 from mxcubecore import queue_entry as qe
@@ -54,6 +56,7 @@ class SampleViewAdapter(AdapterBase):
         self._click_limit = int(HWR.beamline.config.click_centring_num_clicks or 3)
         self._centring_point_id = None
         self._error = False
+        self._click_lock = RLock()
 
         self._ho.connect("shapesChanged", self._emit_shapes_updated)
         self._ho.connect("newGridResult", self._handle_grid_result)
@@ -396,25 +399,29 @@ class SampleViewAdapter(AdapterBase):
         return {}
 
     def click(self, x: float, y: float):
-        if self._error:
-            msg = "Error while centring, please try again"
-            raise RuntimeError(msg)
+        with self._click_lock:
+            #if self._error:
+            #    msg = "Error while centring, please try again"
+            #    raise RuntimeError(msg)
 
-        if HWR.beamline.diffractometer.current_centring_procedure:
-            try:
-                HWR.beamline.diffractometer.image_clicked(x, y)
-                self.centring_click()
-            except Exception:
-                logging.getLogger("MX3.HWR").exception("")
-                return {"clicksLeft": -1}
+            if HWR.beamline.diffractometer.current_centring_procedure:
+                try:
+                    HWR.beamline.diffractometer.image_clicked(x, y)
+                    HWR.beamline.diffractometer.wait_ready()
+                    self.centring_click()
+                except Exception:
+                    logging.getLogger("MX3.HWR").exception("")
+                    msg = "Error while centring, please try again"
+                    raise RuntimeError(msg)
+                
+            elif not self.centring_clicks_left():
+                self.centring_reset_click_count()
+                HWR.beamline.diffractometer.cancel_centring_method()
+                HWR.beamline.diffractometer.start_centring_method(
+                    HWR.beamline.diffractometer.CENTRING_METHOD_MANUAL
+                )
 
-        elif not self.centring_clicks_left():
-            self.centring_reset_click_count()
-            HWR.beamline.diffractometer.start_centring_method(
-                HWR.beamline.diffractometer.CENTRING_METHOD_MANUAL
-            )
-
-        return {"clicksLeft": self.centring_clicks_left()}
+            return {"clicksLeft": self.centring_clicks_left()}
 
     def accept_centring(self):
         HWR.beamline.diffractometer.accept_centring()
