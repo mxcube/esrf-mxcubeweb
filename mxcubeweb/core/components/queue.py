@@ -1741,6 +1741,8 @@ class Queue(ComponentBase):
         """
         if not task["parameters"]["osc_range"]:
             task["parameters"]["osc_range"] = None
+        
+        task["parameters"]["shape"] = str(task["parameters"]["shape"])
 
         queue_entry_name = task_name.title().replace("_", "") + "QueueEntry"
         entry_cls = getattr(qe, queue_entry_name)
@@ -1750,6 +1752,7 @@ class Queue(ComponentBase):
             user_collection_parameters=task["parameters"],
             collection_parameters=task["parameters"],
             legacy_parameters=task["parameters"],
+            lims_parameters=task["parameters"] if task["parameters"].get("flux_start", None) else None
         )
 
         entry = entry_cls(Mock(), entry_cls.QMO(task_data=data))
