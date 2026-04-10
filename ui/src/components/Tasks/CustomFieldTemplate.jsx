@@ -51,7 +51,9 @@ export default function CustomFieldTemplate(props) {
           <label htmlFor={id} className={styles.fieldLabel}>
             {label}
             <span className={styles.unitLabel}>{unit}</span>
-            {required && <span className="text-danger">*</span>}
+            <span className={styles.requiredLabel}>
+              {required ? "" : " (optional)"}
+            </span>
           </label>
         )}
         {rawDescription && (

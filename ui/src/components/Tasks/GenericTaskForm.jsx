@@ -37,15 +37,27 @@ class GenericTaskForm extends React.Component {
     this.defaultParameters = this.defaultParameters.bind(this);
     this.state = {
       rjsfErrors: [],
+      jsformData: {},
     };
-    this.jsformData = {};
+    this.formRef = React.createRef();
   }
 
   submitAddToQueue() {
+
+
     this.props.handleSubmit(this.addToQueue.bind(this, false))();
   }
 
   submitRunNow() {
+    const isValid = this.formRef.current.validateForm();
+
+    debugger;
+
+    if (!isValid) {
+      // focus happens automatically if focusOnFirstError is true
+      return;
+    }
+
     this.props.handleSubmit(this.addToQueue.bind(this, true))();
   }
 
@@ -68,7 +80,7 @@ class GenericTaskForm extends React.Component {
   addToQueue(runNow, params) {
     const parameters = {
       ...params,
-      ...this.jsformData,
+      ...this.state.jsformData,
       label: params.name,
       shape: this.props.pointID,
       selection: this.props.taskData.parameters.selection,
@@ -295,16 +307,18 @@ class GenericTaskForm extends React.Component {
 
           <div className="json-schema-form-container">
             <JSForm
+              ref={this.formRef}
               liveValidate
+              focusOnFirstError
+              formData={this.state.jsformData}
               validator={validator}
               schema={schema}
               uiSchema={uiSchema}
               showErrorList={false}
               onChange={({ formData, errors }) => {
-                this.updateFromRemoteValidation(formData);
-                this.saveCurrentJSFormParameters(formData);
-                this.jsformData = formData;
-                this.setState({ rjsfErrors: errors });
+                 this.updateFromRemoteValidation(formData);
+                 this.saveCurrentJSFormParameters(formData);
+                 this.setState({ rjsfErrors: errors, jsformData: formData });
               }}
               templates={{
                 ObjectFieldTemplate: CustomObjectFieldTemplate,
