@@ -366,18 +366,19 @@ class Lims(ComponentBase):
     def allow_session(self, session):
         HWR.beamline.lims.allow_session(session)
 
-    def select_session(self, session_id: str) -> bool:
+    def select_session(self, session_id: str, username: str) -> bool:
         """Select session.
 
         Params:
             session_id: This is a identifier that could be proposal name or
                 ``session_id`` depending of the type of LIMS login type.
+            username: The name of the user selecting the session.
         """
         logging.getLogger("MX3.HWR").debug("select_session session_id=%s" % session_id)
 
         # Selecting the active session in the LIMS object
         try:
-            session = HWR.beamline.lims.set_active_session_by_id(session_id)
+            session = HWR.beamline.lims.set_active_session_by_id(session_id, username)
         except Exception as exc:
             logging.getLogger("MX3.HWR").exception(
                 "No session candidate. Force signout."
