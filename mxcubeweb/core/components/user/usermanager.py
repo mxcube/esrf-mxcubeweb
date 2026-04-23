@@ -180,13 +180,6 @@ class BaseUserManager(ComponentBase):
             # If no user is currently in control set this user to be
             # in control
             if not active_in_control:
-                if not HWR.beamline.lims.is_user_login_type():
-                    # current_user.nickname = self.app.lims.get_proposal(current_user)
-                    current_user.fullname = HWR.beamline.lims.get_full_user_name()
-                    current_user.nickname = HWR.beamline.lims.get_user_name()
-                else:
-                    current_user.nickname = current_user.username
-
                 self.db_set_in_control(current_user, True)
 
             # Set active proposal to that of the active user
@@ -195,10 +188,12 @@ class BaseUserManager(ComponentBase):
                     if not HWR.beamline.lims.is_user_login_type():
                         # In principle there is no need for doing so..
                         self.app.lims.select_session(
+                            self.app.lims.get_session_manager().active_session.proposal_name,
                             self.app.lims.get_session_manager().active_session.proposal_name
                         )  # The username is the proposal
                     elif _u.selected_proposal is not None:
-                        self.app.lims.select_session(_u.selected_proposal)
+                        self.app.lims.select_session(_u.selected_proposal, _u.username)
+                        HWR.beamline.lims._active_user = _u.username
 
     def is_inhouse_user(self, user_id: str) -> bool:
         """Check if the ``user_id`` is in the in-house user list.
@@ -275,7 +270,7 @@ class BaseUserManager(ComponentBase):
             # before calling login
             self.update_active_users()
 
-            user = self.db_create_user(login_id, password, sso_data)
+            user = self.db_create_user(login_id, sso_data)
             self.app.server.user_datastore.activate_user(user)
             flask_security.login_user(user, remember=False)
 
@@ -424,7 +419,7 @@ class BaseUserManager(ComponentBase):
 
         return list(roles)
 
-    def db_create_user(self, user: str, password: str, sso_data: dict) -> User:
+    def db_create_user(self, username: str, sso_data: dict) -> User:
         """Create or update user in datastore.
 
         If the user already exists, update the user information. If not create new one.
@@ -432,9 +427,7 @@ class BaseUserManager(ComponentBase):
         'incontrol' existis in data store. If not create them also.
 
         Args:
-            user: representation of username (eventually part of it).
-                Also a nickname for new users.
-            password: password (unused).
+            username: usernam
             sso_data: dictionary containing information from the SSO service used.
 
         Returns:
@@ -442,9 +435,6 @@ class BaseUserManager(ComponentBase):
         """
         sid = flask.session["sid"]
         user_datastore = self.app.server.user_datastore
-
-        username = HWR.beamline.lims.get_user_name()
-        fullname = HWR.beamline.lims.get_full_user_name()
 
         # Make sure that the roles staff and incontrol always exists
         if not user_datastore.find_role("staff"):
@@ -462,19 +452,19 @@ class BaseUserManager(ComponentBase):
 
             user_datastore.create_user(
                 username=username,
-                fullname=fullname,
+                fullname=sso_data["userinfo"]["name"],
                 password="",
-                nickname=user,
+                nickname=username,
                 session_id=sid,
                 selected_proposal=selected_proposal,
                 refresh_token=sso_data.get("refresh_token", str(uuid.uuid4())),
                 token=sso_data.get("token", str(uuid.uuid4())),
-                roles=self._get_configured_roles(user),
+                roles=self._get_configured_roles(username),
             )
         else:
             _u.refresh_token = sso_data.get("refresh_token", str(uuid.uuid4()))
             _u.token = sso_data.get("token", str(uuid.uuid4()))
-            user_datastore.append_roles(_u, self._get_configured_roles(user))
+            user_datastore.append_roles(_u, self._get_configured_roles(username))
 
         self.app.server.user_datastore.commit()
 
