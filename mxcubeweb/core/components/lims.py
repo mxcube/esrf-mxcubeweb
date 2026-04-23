@@ -372,12 +372,13 @@ class Lims(ComponentBase):
         Params:
             session_id: This is a identifier that could be proposal name or
                 ``session_id`` depending of the type of LIMS login type.
+            username: The name of the user selecting the session.
         """
-        logging.getLogger("MX3.HWR").debug("select_session session_id=%s" % session_id)
-
         # Selecting the active session in the LIMS object
         try:
-            session = HWR.beamline.lims.set_active_session_by_id(session_id)
+            session = HWR.beamline.lims.set_active_session_by_id(session_id, current_user.username)
+            logging.getLogger("MX3.HWR").debug("user %s select_session session_id=%s" % (current_user.username, session_id))
+
         except Exception as exc:
             logging.getLogger("MX3.HWR").exception(
                 "No session candidate. Force signout."
