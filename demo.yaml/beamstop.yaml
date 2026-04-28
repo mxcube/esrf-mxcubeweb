@@ -1,7 +1,8 @@
 %YAML 1.2
 ---
-class: ExporterNStateMockup.ExporterNStateMockup
+class: BlissNState.BlissNState
 configuration:
-  use_hwstate: true
-  username: beamstop
-  values: '{"OUT": "OFF", "IN": "BEAM"}'
+  actuator_name: beamstop
+  type: actuator
+  username: Beamstop
+  values: '{"IN": "BEAM", "OUT": "OFF", "PARK": "PARK", "TRANSFER": "TRANSFER"}'

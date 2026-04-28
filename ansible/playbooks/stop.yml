@@ -1,0 +1,45 @@
+---
+# Playbook to stop MXCubeWeb services
+
+- name: Stop MXCubeWeb services
+  hosts: mxcube_vms
+  become: true
+
+  tasks:
+    - name: Stop MXCubeWeb service
+      ansible.builtin.systemd:
+        name: "mxcubeweb-{{ vm_context }}"
+        state: stopped
+
+    - name: Stop BLISS REST service
+      ansible.builtin.systemd:
+        name: "bliss-rest-{{ vm_context }}"
+        state: stopped
+      ignore_errors: true
+
+    - name: Stop BLISS demo servers
+      ansible.builtin.systemd:
+        name: "bliss-demo-servers-{{ vm_context }}"
+        state: stopped
+      ignore_errors: true
+
+    # Kill stale BLISS shell sessions not managed by systemd
+    # (tmux-based sessions that may outlive the systemd services)
+    - name: Kill stale BLISS shell sessions
+      ansible.builtin.shell: pkill -f "bliss.shell.main" || true
+      ignore_errors: true
+
+    - name: Kill any remaining process holding port 5000
+      ansible.builtin.shell: fuser -k 5000/tcp || true
+      ignore_errors: true
+
+    - name: Display service status
+      ansible.builtin.systemd:
+        name: "mxcubeweb-{{ vm_context }}"
+      register: service_status
+
+    - name: Show service information
+      ansible.builtin.debug:
+        msg:
+          - "Service: mxcubeweb-{{ vm_context }}"
+          - "Status: {{ service_status.status.ActiveState }}"
