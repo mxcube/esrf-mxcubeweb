@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button, ButtonToolbar, Col, Form, Modal, Row } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { formValueSelector, reduxForm } from 'redux-form';
+import { formValueSelector, reduxForm, change } from 'redux-form';
 
 import { SPACE_GROUPS } from '../../constants';
 import { DraggableModal } from '../DraggableModal';
@@ -25,6 +25,10 @@ class DataCollection extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      targetTotalRange: null,
+    };
+
     this.submitAddToQueue = this.submitAddToQueue.bind(this);
     this.showFooter = this.showFooter.bind(this);
     this.showDCFooter = this.showDCFooter.bind(this);
@@ -32,6 +36,56 @@ class DataCollection extends React.Component {
     this.submitRunNow = this.submitRunNow.bind(this);
     this.addToQueue = this.addToQueue.bind(this);
     this.defaultParameters = this.defaultParameters.bind(this);
+    this.handleTotalRangeChange = this.handleTotalRangeChange.bind(this);
+  }
+
+  componentDidMount() {
+    // Initialize target total range only if we have valid values
+    const oscRange = parseFloat(this.props.osc_range) || 0;
+    const numImages = parseFloat(this.props.num_images) || 0;
+    const calculatedTotal = oscRange * numImages;
+    
+    if (calculatedTotal > 0) {
+      this.setState({ targetTotalRange: calculatedTotal });
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const currentOscRange = parseFloat(this.props.osc_range);
+    const prevOscRange = parseFloat(prevProps.osc_range);
+    const currentNumImages = parseFloat(this.props.num_images);
+    const prevNumImages = parseFloat(prevProps.num_images);
+    
+    // Initialize targetTotalRange if it's not set yet and we now have valid values
+    if ((this.state.targetTotalRange === null || this.state.targetTotalRange === 0) &&
+        !isNaN(currentOscRange) && currentOscRange > 0 &&
+        !isNaN(currentNumImages) && currentNumImages > 0) {
+      this.setState({ targetTotalRange: currentOscRange * currentNumImages });
+      return;
+    }
+    
+    // If osc_range changes, keep total range constant by updating num_images
+    if (!isNaN(currentOscRange) && 
+        !isNaN(prevOscRange) && 
+        currentOscRange !== prevOscRange && 
+        currentOscRange !== 0) {
+      
+      const targetTotal = this.state.targetTotalRange || (prevOscRange * prevNumImages);
+      
+      if (targetTotal > 0) {
+        const newNumImages = Math.round(targetTotal / currentOscRange);
+        this.props.dispatch(change('datacollection', 'num_images', newNumImages));
+        // Keep the target total range the same
+      }
+    }
+    // If num_images changes (but osc_range didn't), update target total range
+    else if (!isNaN(currentNumImages) && 
+             !isNaN(prevNumImages) && 
+             currentNumImages !== prevNumImages &&
+             currentOscRange === prevOscRange) {
+      const newTotalRange = currentOscRange * currentNumImages;
+      this.setState({ targetTotalRange: newTotalRange });
+    }
   }
 
   submitAddToQueue() {
@@ -74,6 +128,17 @@ class DataCollection extends React.Component {
 
   defaultParameters() {
     resetLastUsedParameters(this);
+  }
+
+  handleTotalRangeChange(event) {
+    const totalRange = parseFloat(event.target.value);
+    const oscRange = parseFloat(this.props.osc_range) || 1;
+    
+    if (!isNaN(totalRange) && oscRange !== 0) {
+      const numImages = Math.round(totalRange / oscRange);
+      this.setState({ targetTotalRange: totalRange });
+      this.props.dispatch(change('datacollection', 'num_images', numImages));
+    }
   }
 
   showDCFooter() {
@@ -171,6 +236,21 @@ class DataCollection extends React.Component {
       energyList.push(result);
     });
 
+    // Get current values
+    const oscRange = parseFloat(this.props.osc_range) || 0;
+    const numImages = parseFloat(this.props.num_images) || 0;
+    
+    // Calculate total range from state (preserved value) or from current values
+    // Use stored target if it exists and is > 0, otherwise calculate from current values
+    const totalRange = (this.state.targetTotalRange !== null && this.state.targetTotalRange > 0)
+      ? this.state.targetTotalRange 
+      : (oscRange * numImages);
+
+    // Calculate total exposure
+    const expTime = parseFloat(this.props.exp_time) || 0;
+    const transmission = parseFloat(this.props.transmission) || 100;
+    const totalExposure = (expTime * numImages * transmission / 100).toFixed(2);
+
     return (
       <DraggableModal show={this.props.show} onHide={this.props.hide}>
         <Modal.Header closeButton>
@@ -240,6 +320,21 @@ class DataCollection extends React.Component {
               />
             </FieldsRow>
             <FieldsRow>
+              <Form.Group as={Row} className="mb-3">
+                <Form.Label column sm="6">
+                  Total Range (degrees)
+                </Form.Label>
+                <Col sm="4">
+                  <Form.Control
+                    type="number"
+                    value={totalRange}
+                    onChange={this.handleTotalRangeChange}
+                    step="any"
+                  />
+                </Col>
+              </Form.Group>
+            </FieldsRow>
+            <FieldsRow>
               <InputField
                 propName="exp_time"
                 type="number"
@@ -253,6 +348,25 @@ class DataCollection extends React.Component {
                 type="number"
                 label="Transmission"
               />
+            </FieldsRow>
+            <FieldsRow>
+              <Form.Group as={Row} className="mb-3">
+                <Form.Label column sm="6">
+                  Total Exposure (s)
+                </Form.Label>
+                <Col sm="4">
+                  <Form.Control
+                    type="text"
+                    value={totalExposure}
+                    disabled
+                    readOnly
+                    style={{
+                      color: parseFloat(totalExposure) > 10 ? 'red' : 'inherit',
+                      fontWeight: parseFloat(totalExposure) > 10 ? 'bold' : 'normal'
+                    }}
+                  />
+                </Col>
+              </Form.Group>
             </FieldsRow>
             <FieldsRow>
               <InputField
@@ -358,6 +472,10 @@ const selector = formValueSelector('datacollection');
 
 export default connect((state) => {
   const subdir = selector(state, 'subdir');
+  const osc_range = selector(state, 'osc_range');
+  const num_images = selector(state, 'num_images');
+  const exp_time = selector(state, 'exp_time');
+  const transmission = selector(state, 'transmission');
 
   let position = state.taskForm.pointID === '' ? 'PX' : state.taskForm.pointID;
   if (typeof position === 'object') {
@@ -386,9 +504,6 @@ export default connect((state) => {
       ].acq_parameters.osc_range;
   }
 
-  const currentSampleId =
-    state.taskForm.sampleIds.length === 1 ? state.taskForm.sampleIds[0] : null;
-
   const {
     cellA,
     cellAlpha,
@@ -397,7 +512,7 @@ export default connect((state) => {
     cellC,
     cellGamma,
     crystalSpaceGroup,
-  } = state.sampleGrid.sampleList[currentSampleId] ?? {};
+  } = state.sampleGrid.sampleList[state.queue.currentSampleID];
 
   return {
     path: `${state.login.rootPath}/${subdir}`,
@@ -406,6 +521,10 @@ export default connect((state) => {
     beamline: state.beamline,
     detector_mode_list: acq_parameters.detector_mode_list,
     components: state.uiproperties.sample_view_motors.components,
+    osc_range,
+    num_images,
+    exp_time,
+    transmission,
     initialValues: {
       ...parameters,
       beam_size: state.sampleview.currentAperture,
@@ -419,7 +538,7 @@ export default connect((state) => {
       cellBeta,
       cellC,
       cellGamma,
-      space_group: crystalSpaceGroup,
+      crystalSpaceGroup,
     },
   };
 })(DataCollectionForm);
