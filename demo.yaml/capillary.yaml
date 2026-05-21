@@ -1,7 +1,8 @@
 %YAML 1.2
 ---
-class: ExporterNStateMockup.ExporterNStateMockup
+class: BlissNState.BlissNState
 configuration:
-  use_hwstate: true
-  username: capillary
-  values: '{"IN": "BEAM", "OUT": "OFF"}'
+  actuator_name: capillary
+  type: motor
+  username: Capillary
+  values: '{"BEAM": "BEAM", "PARK": "PARK", "OFF": "OFF"}'
