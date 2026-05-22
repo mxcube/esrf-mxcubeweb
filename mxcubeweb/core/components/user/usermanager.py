@@ -593,6 +593,3 @@ class SSOUserManager(BaseUserManager):
 
     def _login(self, login_id: str, password: str, sso: bool):
         return {"status": {"code": "ok", "msg": ""}}
-
-    def _signout(self):
-        pass

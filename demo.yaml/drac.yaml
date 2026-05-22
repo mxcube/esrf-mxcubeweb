@@ -1,0 +1,18 @@
+%YAML 1.2
+---
+class: ICATLIMS.ICATLIMS
+configuration:
+  ws_root: https://icatplus.esrf.fr
+  loginType: user
+  queue_urls: bcu-mq-01:61613
+  before_offset_days: 220
+  after_offset_days: 10
+  compatible_beamlines: "ID30B,ID23-2,ID30A-1,ID30A-3,ID23-1"
+  override_beamline_name: ID30B
+  only_staff_session_selection: false
+  filter: participant
+  data_portal_url: "https://data.esrf.fr/investigation/{id}/datasets"
+  logbook_url: "https://data.esrf.fr/investigation/{id}/logbook"
+  user_portal_url: "https://smis.esrf.fr/misapps/SMISWebClient/protected/aform/manageAForm.do?action=view&expSessionVO.pk={id}"
+  use_set_endstation_name: true
+  login_plugin: keycloak

@@ -43,11 +43,18 @@ for arg in "$@"; do
     esac
 done
 
+# Detect whether passwordless sudo works on the target (used for both quick and full deploys)
+BECOME_ARGS=()
+if ! ansible -i "${INVENTORY}" all -m command -a "true" --become --timeout 10 -q 2>/dev/null; then
+    echo "Sudo requires a password on the target — you will be prompted once."
+    BECOME_ARGS=(--ask-become-pass)
+fi
+
 if [ "$QUICK" = true ]; then
     echo "(quick mode: skipping system packages and Docker image downloads)"
-    ansible-playbook -i "${INVENTORY}" "${PLAYBOOK}" --skip-tags "system,docker" "${EXTRA_ARGS[@]}"
+    ansible-playbook -i "${INVENTORY}" "${PLAYBOOK}" --skip-tags "system,docker" "${BECOME_ARGS[@]}" "${EXTRA_ARGS[@]}"
 else
-    ansible-playbook -i "${INVENTORY}" "${PLAYBOOK}" "${EXTRA_ARGS[@]}"
+    ansible-playbook -i "${INVENTORY}" "${PLAYBOOK}" "${BECOME_ARGS[@]}" "${EXTRA_ARGS[@]}"
 fi
 
 echo "=== Deploy finished ==="

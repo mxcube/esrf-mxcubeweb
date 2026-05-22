@@ -65,9 +65,9 @@ class Server:
                 cfg.flask.CERT_PEM, cfg.flask.CERT_KEY
             )
         elif cfg.flask.CERT == "ADHOC":
-            cert_dir = Path(cfg.flask.USER_DB_PATH).parent
+            cert_base = Path(cfg.flask.USER_DB_PATH).parent / "mxcube-adhoc"
             ssl_context = werkzeug.serving.load_ssl_context(
-                *werkzeug.serving.make_ssl_devcert(str(cert_dir))
+                *werkzeug.serving.make_ssl_devcert(str(cert_base))
             )
         else:
             ssl_context = None
@@ -105,7 +105,7 @@ def create_server(cfg, cmdline_options):
     )
 
     flask.config.from_object(cfg.flask)
-    flask.wsgi_app = ProxyFix(flask.wsgi_app)
+    flask.wsgi_app = ProxyFix(flask.wsgi_app, x_for=1, x_proto=1, x_host=1)
     flask.register_error_handler(HTTPException, http_exception_handler)
 
     init_csp(flask, cfg)

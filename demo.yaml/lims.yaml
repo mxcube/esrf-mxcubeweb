@@ -1,11 +1,6 @@
 %YAML 1.2
 ---
-class: ISPyBClientMockup.ISPyBClientMockup
-configuration:
-  base_result_url: "https://your.limsresults.org"
-  loginType: proposal
-  ws_password: ''
-  ws_root: "https://your.lims.org"
-  ws_username: ''
+class: ESRFLIMS.ESRFLIMS
 objects:
-  lims_rest: lims_rest.yaml
+  drac: drac.yaml
+  ispyb: ispyb.yaml

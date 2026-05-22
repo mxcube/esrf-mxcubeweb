@@ -4,7 +4,7 @@ server:
   SECRET_KEY: ASECRETKEY
   SECURITY_PASSWORD_SALT: ASALT
   PERMANENT_SESSION_LIFETIME: 60
-  CERT: NONE
+  CERT: ADHOC
 
   DEBUG: false
 
@@ -13,7 +13,7 @@ server:
   PORT: 8081
   USER_DB_PATH: /tmp/mxcube-user.db
 
-  RATELIMIT_DEFAULT: "150000 per day;6000 per hour;20 per minute"
+  RATELIMIT_DEFAULT: "150000 per day;6000 per hour;15 per minute"
 
 sso:
   USE_SSO: false

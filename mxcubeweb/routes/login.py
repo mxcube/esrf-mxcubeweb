@@ -77,8 +77,14 @@ def init_route(app, server, url_prefix):
         try:
             app.usermanager.sso_validate()
         except Exception:
+            logging.getLogger("MX3.HWR").exception(
+                "[SSO] /auth callback failed — redirecting to /login"
+            )
             return redirect("/login")
         else:
+            logging.getLogger("MX3.HWR").info(
+                "[SSO] /auth callback success — redirecting to /datacollection"
+            )
             return redirect("/datacollection")
 
     @bp.route("/signout")

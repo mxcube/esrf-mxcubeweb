@@ -13,12 +13,12 @@ import urllib3
 
 @pytest.fixture(scope="module")
 def live_config(request):
-    host = request.config.getoption("--live-host", default="localhost")
+    host = request.config.getoption("--live-host", default="cl1.esrf.fr")
     port = request.config.getoption("--live-port", default="8081")
-    count = int(request.config.getoption("--live-count", default="15"))
-    scheme = request.config.getoption("--live-scheme", default="http")
+    count = int(request.config.getoption("--live-count", default="20"))
+    scheme = request.config.getoption("--live-scheme", default="https")
     ca_cert = request.config.getoption("--live-ca-cert", default=None)
-    no_verify = request.config.getoption("--live-no-verify", default=False)
+    no_verify = request.config.getoption("--live-no-verify", default=True)
     return {"host": host, "port": port, "count": count, "scheme": scheme,
             "ca_cert": ca_cert, "no_verify": no_verify}
 
@@ -68,6 +68,13 @@ def server_reachable(probe_url, ssl_verify):
     try:
         r = requests.get(probe_url, timeout=5, verify=ssl_verify)
         return r.status_code
+    except requests.exceptions.SSLError as exc:
+        pytest.fail(
+            f"SSL error connecting to {probe_url}\n"
+            f"  {exc}\n"
+            "Hint: the server uses an ADHOC/self-signed certificate.\n"
+            "      Pass --live-no-verify (pytest) or -k (standalone) to skip TLS verification."
+        )
     except requests.ConnectionError:
         pytest.skip(f"MXCubeWeb server not reachable at {probe_url}")
 
@@ -267,17 +274,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="MXCubeWeb rate-limiter integration test (standalone)"
     )
-    parser.add_argument("-H", "--host", default="localhost", help="Target host (default: localhost)")
+    parser.add_argument("-H", "--host", default="cl1.esrf.fr", help="Target host (default: cl1.esrf.fr)")
     parser.add_argument("-p", "--port", default="8081", help="Target port (default: 8081)")
-    parser.add_argument("-s", "--scheme", default="http", choices=["http", "https"],
-                        help="URL scheme (default: http)")
+    parser.add_argument("-s", "--scheme", default="https", choices=["http", "https"],
+                        help="URL scheme (default: https)")
     parser.add_argument("--ca-cert", default=None, metavar="PATH",
                         help="Path to CA bundle for self-signed certificates (https only)")
-    parser.add_argument("-k", "--no-verify", action="store_true", default=False,
-                        help="Disable TLS certificate verification (INSECURE — lab/pentest use only)")
+    parser.add_argument("-k", "--no-verify", action="store_true", default=True,
+                        help="Disable TLS certificate verification (default: True for ADHOC/self-signed certs)")
     parser.add_argument(
-        "-n", "--count", type=int, default=15,
-        help="Requests to send in the hammer test (default: 15)"
+        "-n", "--count", type=int, default=20,
+        help="Requests to send in the hammer test (default: 20)"
     )
     args = parser.parse_args()
     sys.exit(_run_standalone(args.host, args.port, args.count, args.scheme, args.ca_cert, args.no_verify))
