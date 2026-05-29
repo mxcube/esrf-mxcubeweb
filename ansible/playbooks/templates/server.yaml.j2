@@ -31,7 +31,7 @@ server:
 {% else %}
     []
 {% endif %}
-  RATELIMIT_DEFAULT: "150000 per day;6000 per hour;20 per minute"
+  RATELIMIT_DEFAULT: "150000 per day;6000 per hour"
 
 sso:
   USE_SSO: {{ mxcubeweb_sso.use_sso | lower }}
@@ -55,7 +55,7 @@ mxcube:
   AUTOSYNC_LIMS: false
 
   usermanager:
-    class: {{ "UserManager" if mxcubeweb_sso.use_sso else "UserManager" }}
+    class: {{ "UserManager" }}
     inhouse_is_staff: true
     users:
 {% for user in mxcubeweb_users %}
@@ -63,6 +63,10 @@ mxcube:
         role: "{{ user.role }}"
 {% endfor %}
 
+argus:
+  USE_ARGUS: false
+  STREAM_PROXY_URL: "ws://localhost:7000/ws"
+  
 braggy:
   BRAGGY_URL: ""
   USE_BRAGGY: false

@@ -7,6 +7,16 @@ set -e
 SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(realpath "${SCRIPT_ROOT}/../")"
 
+# Auto-load secrets file if present
+for SECRETS_FILE in "${SCRIPT_ROOT}/mxcube_secrets" "${HOME}/.mxcube_secrets"; do
+    if [ -f "${SECRETS_FILE}" ]; then
+        echo "Loading secrets from ${SECRETS_FILE}"
+        # shellcheck source=/dev/null
+        source "${SECRETS_FILE}"
+        break
+    fi
+done
+
 # Configuration
 VM_HOST=$(grep -A1 "mxcube_vm1:" "${PROJECT_ROOT}/inventory.yaml" | grep "ansible_host:" | awk '{print $2}')
 REMOTE_PORT=8081

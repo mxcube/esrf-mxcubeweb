@@ -239,9 +239,20 @@
       become: false
       changed_when: true
       when: not mxcubeweb_env.stat.exists
-      async: 3600
+      async: 600
       poll: 30
       tags: [conda, environment]
+
+    - name: Update mxcubeweb conda environment from conda-environment.yml
+      ansible.builtin.command:
+        cmd: "{{ install_base_path }}/miniconda/bin/mamba env update -n mxcubeweb --file {{ install_base_path }}/mxcubeweb/conda-environment.yml --prune"
+      become_user: "{{ service_user }}"
+      become: false
+      changed_when: true
+      when: mxcubeweb_env.stat.exists and not (skip_env_update | default(false) | bool)
+      async: 600
+      poll: 30
+      tags: [conda, environment, update, env_update]
 
     - name: Check if bliss_dev conda env exists
       ansible.builtin.stat:
@@ -273,7 +284,7 @@
       become: false
       changed_when: true
       when: not bliss_dev_env.stat.exists
-      async: 1000
+      async: 600
       poll: 60
       tags: [conda, environment, bliss]
 
@@ -349,25 +360,9 @@
       become_user: "{{ service_user }}"
       become: false
       changed_when: false
-      async: 1800
+      async: 600
       poll: 30
       tags: [ui, dependencies, frontend, update]
-
-    - name: Check if UI rebuild is needed
-      ansible.builtin.shell: |
-        BUILD="{{ install_base_path }}/mxcubeweb/ui/build/index.html"
-        if [ ! -f "$BUILD" ]; then
-          echo "needed"
-          exit 0
-        fi
-        if find {{ install_base_path }}/mxcubeweb/ui/src -newer "$BUILD" -type f | grep -q .; then
-          echo "needed"
-        else
-          echo "skip"
-        fi
-      register: ui_build_check
-      changed_when: false
-      tags: [ui, build, frontend, update]
 
     - name: Build UI
       ansible.builtin.command:
@@ -376,9 +371,7 @@
         chdir: "{{ install_base_path }}/mxcubeweb"
       become_user: "{{ service_user }}"
       become: false
-      changed_when: true
-      when: ui_build_check.stdout == "needed"
-      async: 1800
+      async: 600
       poll: 30
       tags: [ui, build, frontend, update]
 

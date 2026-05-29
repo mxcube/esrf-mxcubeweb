@@ -27,8 +27,12 @@ export default function VideoPlayer(props) {
     player.play();
 
     return () => {
+      if (!player.socket) {
+        return;
+      }
+
       player.pause();
-      player.source.destroy();
+      player.source?.destroy();
       player.video?.destroy();
     };
   }, [format, source, width, height]);

@@ -10,8 +10,8 @@ mxcubeweb_config:
   host: "0.0.0.0"
   debug: false
 
-  secret_key: "7fc54a117f2ab845a4a5fbedae559add640039b01ad7ec11178b94313e3fb51b"
-  security_password_salt: "08d52a8a32a2e5995ee2e0c37084b18390a61c6284d9569453df428800f53be5"
+  secret_key: "{{ lookup('env', 'MXCUBE_SECRET_KEY') }}"
+  security_password_salt: "{{ lookup('env', 'MXCUBE_SECURITY_PASSWORD_SALT') }}"
 
   user_db_path: "/tmp/mxcube-user.db"
   permanent_session_lifetime: 60
@@ -33,7 +33,7 @@ mxcubeweb_sso:
   token_info_uri: "https://websso.esrf.fr/realms/ESRF/protocol/openid-connect/token"
   meta_data_uri: "https://websso.esrf.fr/realms/ESRF/.well-known/openid-configuration"
   client_id: "mxcube"
-  client_secret: "DoCKb0rnxbDZX3YrueQp2yr9nd0Qdcbn"
+  client_secret: "{{ lookup('env', 'MXCUBE_SSO_CLIENT_SECRET') }}"
   scope: "openid email profile"
   code_challenge_method: "S256"
 
@@ -44,8 +44,8 @@ mxcubeweb_users:
 conda_environments:
   mxcube:
     conda_packages:
-      - nodejs==20.*
-      - pnpm==9.*
+      - nodejs==22.*
+      - pnpm==10.*
       - poetry==2.1.3
       - openldap
       - ffmpeg

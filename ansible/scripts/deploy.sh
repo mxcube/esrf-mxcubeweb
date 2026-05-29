@@ -29,6 +29,29 @@ if [ ! -f "${PLAYBOOK}" ]; then
     exit 1
 fi
 
+# Check that required secret environment variables are set
+MISSING_VARS=()
+for var in MXCUBE_SECRET_KEY MXCUBE_SECURITY_PASSWORD_SALT MXCUBE_SSO_CLIENT_SECRET; do
+    if [ -z "${!var}" ]; then
+        MISSING_VARS+=("$var")
+    fi
+done
+if [ ${#MISSING_VARS[@]} -gt 0 ]; then
+    echo ""
+    echo "ERROR: The following required environment variables are not set:"
+    for var in "${MISSING_VARS[@]}"; do
+        echo "  $var"
+    done
+    echo ""
+    echo "Set them before running this script, e.g. in ~/.mxcube_secrets (never commit that file):"
+    echo "  export MXCUBE_SECRET_KEY=\$(python -c 'import secrets; print(secrets.token_hex())')"
+    echo "  export MXCUBE_SECURITY_PASSWORD_SALT=\$(python -c 'import secrets; print(secrets.token_hex())')"
+    echo "  export MXCUBE_SSO_CLIENT_SECRET=<value>"
+    echo "  source ~/.mxcube_secrets"
+    echo ""
+    exit 1
+fi
+
 # Parse --quick flag; pass everything else through to ansible-playbook
 QUICK=false
 EXTRA_ARGS=()
@@ -51,8 +74,11 @@ if ! ansible -i "${INVENTORY}" all -m command -a "true" --become --timeout 10 -q
 fi
 
 if [ "$QUICK" = true ]; then
-    echo "(quick mode: skipping system packages and Docker image downloads)"
-    ansible-playbook -i "${INVENTORY}" "${PLAYBOOK}" --skip-tags "system,docker" "${BECOME_ARGS[@]}" "${EXTRA_ARGS[@]}"
+    echo "(quick mode: skipping system packages, Docker image downloads and conda env update)"
+    ansible-playbook -i "${INVENTORY}" "${PLAYBOOK}" \
+        --skip-tags "system,docker" \
+        --extra-vars "skip_env_update=true" \
+        "${BECOME_ARGS[@]}" "${EXTRA_ARGS[@]}"
 else
     ansible-playbook -i "${INVENTORY}" "${PLAYBOOK}" "${BECOME_ARGS[@]}" "${EXTRA_ARGS[@]}"
 fi
