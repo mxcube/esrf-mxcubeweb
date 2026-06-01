@@ -24,13 +24,10 @@ server:
 {% endif %}
 
   ALLOWED_CORS_ORIGINS:
-{% if mxcubeweb_config.allowed_cors_origins | default([]) | length > 0 %}
-{% for origin in mxcubeweb_config.allowed_cors_origins %}
-    - "{{ origin }}"
-{% endfor %}
-{% else %}
-    []
-{% endif %}
+    - "https://id30a2.mxcube.esrf.fr"
+    - "wss://id30a2.mxcube.esrf.fr"
+    - "https://id30a2-video.mxcube.esrf.fr"
+    - "wss://id30a2-video.mxcube.esrf.fr"
   RATELIMIT_DEFAULT: "150000 per day;6000 per hour"
 
 sso:
@@ -45,8 +42,9 @@ sso:
   CODE_CHALLANGE_METHOD: "{{ mxcubeweb_sso.code_challenge_method }}"
 
 mxcube:
+  USE_EXTERNAL_STREAMER: True
   VIDEO_FORMAT: MPEG1
-  VIDEO_STREAM_URL: ws://localhost:8000/ws
+  VIDEO_STREAM_URL: "wss://id30a2-video.mxcube.esrf.fr/ws"
   VIDEO_STREAM_PORT: 8000
   MXCUBE_STARTS_VIDEO_STREAM: true
   mode: OSC
@@ -66,7 +64,7 @@ mxcube:
 argus:
   USE_ARGUS: false
   STREAM_PROXY_URL: "ws://localhost:7000/ws"
-  
+
 braggy:
   BRAGGY_URL: ""
   USE_BRAGGY: false
