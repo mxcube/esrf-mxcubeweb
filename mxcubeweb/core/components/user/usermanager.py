@@ -446,13 +446,15 @@ class BaseUserManager(ComponentBase):
 
         if not _u:
             if not HWR.beamline.lims.is_user_login_type():
-                selected_proposal = user
+                selected_proposal = username
+                fullname = ""
             else:
                 selected_proposal = None
+                fullname = sso_data["userinfo"]["name"]
 
             user_datastore.create_user(
                 username=username,
-                fullname=sso_data["userinfo"]["name"],
+                fullname=fullname,
                 password="",
                 nickname=username,
                 session_id=sid,
