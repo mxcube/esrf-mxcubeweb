@@ -94,7 +94,9 @@
       become_user: "{{ service_user }}"
       become: false
       when: not mamba_installed.stat.exists
-      changed_when: false
+      changed_when: true
+      async: 3600
+      poll: 30
       tags: [conda, mamba, bliss]
 
     # Copy or clone repositories depending on use_local_repos flag
