@@ -63,7 +63,7 @@ objects:
   # Video streaming:
   # When Argus is used, make sure to set MXCUBE_STARTS_VIDEO_STREAM
   # to false in mxcube-web/server.yaml
-  # - argus: argus.yaml
+  - argus: argus.yaml
 
   # Analysis:
   - offline_processing: auto_processing.yaml
