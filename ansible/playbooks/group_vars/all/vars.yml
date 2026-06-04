@@ -1,5 +1,6 @@
 ---
 # Global variables for MXCubeWeb deployment
+# Secrets are stored in local with vault)
 
 service_user: "{{ lookup('env', 'USER') }}"
 
@@ -10,17 +11,17 @@ mxcubeweb_config:
   host: "0.0.0.0"
   debug: false
 
-  secret_key: "{{ lookup('env', 'MXCUBE_SECRET_KEY') }}"
-  security_password_salt: "{{ lookup('env', 'MXCUBE_SECURITY_PASSWORD_SALT') }}"
+  secret_key: "{{ vault_mxcube_secret_key }}"
+  security_password_salt: "{{ vault_mxcube_security_password_salt }}"
 
   user_db_path: "/tmp/mxcube-user.db"
   permanent_session_lifetime: 60
 
   cert: "NONE"
-  cert_pem: ""             
-  cert_key: ""            
-  local_cert_pem: ""       
-  local_cert_key: ""       
+  cert_pem: ""
+  cert_key: ""
+  local_cert_pem: ""
+  local_cert_key: ""
 
   external_url: "https://id30a2.mxcube.esrf.fr"
   allowed_cors_origins:
@@ -33,7 +34,7 @@ mxcubeweb_sso:
   token_info_uri: "https://websso.esrf.fr/realms/ESRF/protocol/openid-connect/token"
   meta_data_uri: "https://websso.esrf.fr/realms/ESRF/.well-known/openid-configuration"
   client_id: "mxcube"
-  client_secret: "{{ lookup('env', 'MXCUBE_SSO_CLIENT_SECRET') }}"
+  client_secret: "{{ vault_mxcube_sso_client_secret }}"
   scope: "openid email profile"
   code_challenge_method: "S256"
 
@@ -53,7 +54,7 @@ conda_environments:
       - gunicorn
       - gevent
       - blissclient
-      - marshmallow  
+      - marshmallow
       - aiohttp
       - pyicat_plus
 

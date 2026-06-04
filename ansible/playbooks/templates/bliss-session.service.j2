@@ -9,8 +9,9 @@ User={{ service_user }}
 Group=esrfusers
 WorkingDirectory={{ install_base_path }}/bliss
 
-# Start command - activate conda environment and run bliss demo session
-ExecStart=/bin/bash -c 'HOSTNAME=$(hostname) && export BEACON_HOST=$HOSTNAME:10001 && export TANGO_HOST=$HOSTNAME:10000 && source {{ install_base_path }}/miniconda/bin/activate bliss_dev && bliss-demo-session'
+# server bypasses all tmux logic in bliss shell and runs the
+# session headlessly — starts the BLISS session and REST API with no terminal.
+ExecStart=/bin/bash -c 'source {{ install_base_path }}/miniconda/bin/activate bliss_dev && bliss-demo-session --server'
 
 # Give demo servers time to start
 ExecStartPre=/bin/sleep 10

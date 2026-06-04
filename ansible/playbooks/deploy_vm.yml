@@ -241,7 +241,7 @@
       become: false
       changed_when: true
       when: not mxcubeweb_env.stat.exists
-      async: 600
+      async: 1800
       poll: 30
       tags: [conda, environment]
 
@@ -252,7 +252,7 @@
       become: false
       changed_when: true
       when: mxcubeweb_env.stat.exists and not (skip_env_update | default(false) | bool)
-      async: 600
+      async: 1800
       poll: 30
       tags: [conda, environment, update, env_update]
 
@@ -286,7 +286,7 @@
       become: false
       changed_when: true
       when: not bliss_dev_env.stat.exists
-      async: 600
+      async: 1800
       poll: 60
       tags: [conda, environment, bliss]
 
@@ -362,7 +362,7 @@
       become_user: "{{ service_user }}"
       become: false
       changed_when: false
-      async: 600
+      async: 1800
       poll: 30
       tags: [ui, dependencies, frontend, update]
 
@@ -373,7 +373,7 @@
         chdir: "{{ install_base_path }}/mxcubeweb"
       become_user: "{{ service_user }}"
       become: false
-      async: 600
+      async: 1800
       poll: 30
       tags: [ui, build, frontend, update]
 
