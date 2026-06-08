@@ -361,11 +361,11 @@ class BaseUserManager(ComponentBase):
 
         # If no previous session selected and a single session available
         # then it selects automatically the session
-        if (
-            current_user.selected_proposal is None
-            and session_manager.active_session is not None
-        ):
-            self.app.lims.select_session(session_manager.active_session.session_id)
+        # if (
+        #     current_user.selected_proposal is None
+        #     and session_manager.active_session is not None
+        # ):
+        #     self.app.lims.select_session(session_manager.active_session.session_id)
 
         res = {
             "synchrotronName": HWR.beamline.session.synchrotron_name,
@@ -447,7 +447,7 @@ class BaseUserManager(ComponentBase):
         if not _u:
             if not HWR.beamline.lims.is_user_login_type():
                 selected_proposal = username
-                fullname = ""
+                fullname = username
             else:
                 selected_proposal = None
                 fullname = sso_data["userinfo"]["name"]
