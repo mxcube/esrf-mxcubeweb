@@ -470,7 +470,7 @@ class Queue(ComponentBase):
         )
 
         return {
-            "label": "XRF Scan",
+            "label": "XRF Spectrum",
             "type": "xrf_spectrum",
             "parameters": parameters,
             "sampleID": sample_node.loc_str,
@@ -1214,7 +1214,7 @@ class Queue(ComponentBase):
         entry.set_enabled(task_data["checked"])
 
     def set_xrf_params(self, model, entry, task_data, sample_model):
-        """Helper method that sets the xrf scan parameters for a XRF spectrum Scan.
+        """Helper method that sets the XRF spectrum parameters.
 
         :param XRFSpectrum QueueModel: The model to set parameters of
         :param XrfSpectrumQueueEntry: The queue entry of the model
@@ -1256,7 +1256,7 @@ class Queue(ComponentBase):
         entry.set_enabled(task_data["checked"])
 
     def set_energy_scan_params(self, model, entry, task_data, sample_model):
-        """Helper method that sets the xrf scan parameters for a XRF spectrum Scan.
+        """Helper method that sets the energy scan parameters.
 
         :param EnergyScan QueueModel: The model to set parameters of
         :param EnergyScanQueueEntry: The queue entry of the model
@@ -1632,7 +1632,7 @@ class Queue(ComponentBase):
         return group_model._node_id
 
     def add_xrf_scan(self, node_id, task):
-        """Add a XRF Scan task to the sample with id: <id>.
+        """Add a XRF spectrum task to the sample with id: <id>.
 
         :param int id: id of the sample to which the task belongs
         :param dict task: task data
