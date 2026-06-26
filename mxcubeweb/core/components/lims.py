@@ -376,8 +376,8 @@ class Lims(ComponentBase):
         """
         # Selecting the active session in the LIMS object
         try:
-            session = HWR.beamline.lims.set_active_session_by_id(session_id, current_user.username)
-            logging.getLogger("MX3.HWR").debug("user %s select_session session_id=%s" % (current_user.username, session_id))
+            session = HWR.beamline.lims.set_active_session_by_id(session_id, username)
+            logging.getLogger("MX3.HWR").debug("user %s select_session session_id=%s" % (username, session_id))
 
         except Exception as exc:
             logging.getLogger("MX3.HWR").exception(

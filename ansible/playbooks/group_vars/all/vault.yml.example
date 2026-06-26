@@ -1,0 +1,13 @@
+---
+# SECRETS TEMPLATE — copy to vault.yml, fill in values, then encrypt:
+#   ansible-vault encrypt ansible/playbooks/group_vars/all/vault.yml
+#
+# Generate secret_key and security_password_salt with:
+#   python -c 'import secrets; print(secrets.token_hex())'
+
+# MXCubeWeb Flask
+vault_mxcube_secret_key: ""
+vault_mxcube_security_password_salt: ""
+
+# SSO client secret (leave empty if use_sso: false)
+vault_mxcube_sso_client_secret: ""

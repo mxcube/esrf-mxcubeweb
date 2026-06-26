@@ -1,11 +1,10 @@
 ---
 # Global variables for MXCubeWeb deployment
-# Secrets are stored in local with vault)
+# Secrets are in group_vars/vault.yml (ansible-vault encrypted, see README-secrets.md)
 
 service_user: "{{ lookup('env', 'USER') }}"
 
 install_base_path: "/opt/mxcube"
-log_base_path: "/var/log/mxcube"
 
 mxcubeweb_config:
   port: 8081
@@ -18,7 +17,7 @@ mxcubeweb_config:
   user_db_path: "/tmp/mxcube-user.db"
   permanent_session_lifetime: 60
 
-  cert: "ADHOC"
+  cert: "NONE"
   cert_pem: ""
   cert_key: ""
   local_cert_pem: ""
@@ -81,3 +80,13 @@ bliss_version: "master"
 # Docker images URLs for downloading pre-built images
 arinax_docker_image_url: "https://cloud.esrf.fr/public.php/dav/files/7qtFP5iP9jiPB2M"
 flex_docker_image_url: "https://cloud.esrf.fr/public.php/dav/files/iAdyarEZmL9odxJ"
+
+# ICAT+ Docker configuration
+# server_url: URL du serveur ICAT backend depuis le conteneur Docker.
+# Si ICAT tourne sur le host VM (hors Docker) → http://host-gateway:<port>
+icat_config:
+  port: 8003
+  server_url: "http://host-gateway:8080"
+  server_port: 8080
+  mongo_user: "mxcube"
+  mongo_password: "{{ vault_icat_mongo_password }}"

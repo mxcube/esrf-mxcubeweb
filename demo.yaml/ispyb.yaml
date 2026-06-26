@@ -1,6 +1,6 @@
 %YAML 1.2
 ---
-class: ProposalTypeISPyBLims.ProposalTypeISPyBLims
+class: MockupProposalTypeISPyBLims.MockupProposalTypeISPyBLims
 configuration:
   ws_root: https://ispyb.esrf.fr/ispyb/ispyb-ws/ispybWS/
   ws_username: ispybws1

@@ -364,7 +364,7 @@ class BaseUserManager(ComponentBase):
             current_user.selected_proposal is None
             and session_manager.active_session is not None
         ):
-            self.app.lims.select_session(session_manager.active_session.session_id)
+            self.app.lims.select_session(session_manager.active_session.session_id, current_user.username)
 
         res = {
             "synchrotronName": HWR.beamline.session.synchrotron_name,

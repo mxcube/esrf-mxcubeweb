@@ -1,4 +1,5 @@
 import json
+import logging
 
 from flask import (
     Blueprint,
@@ -6,9 +7,12 @@ from flask import (
     jsonify,
     request,
 )
+from flask_login import current_user
 from mxcubecore import HardwareRepository as HWR
 
 from mxcubeweb.core.models.generic import SimpleNameValue
+
+_queue_log = logging.getLogger("MX3.HWR")
 
 
 # Disabling C901 function is too complex (19)
@@ -26,6 +30,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
                 409: Queue could not be started
         """
         sid = request.get_json().get("sid", None)
+        _queue_log.info("[QUEUE] user=%s action=start sid=%s", current_user.username, sid)
         app.queue.queue_start(sid)
 
         return Response(status=200)
@@ -40,6 +45,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
                 200: On success
                 409: Queue could not be stopped
         """
+        _queue_log.info("[QUEUE] user=%s action=stop", current_user.username)
         app.queue.queue_stop()
         return Response(status=200)
 
@@ -53,6 +59,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
                 200 On success
                 409 queue could not be aborted
         """
+        _queue_log.info("[QUEUE] user=%s action=abort", current_user.username)
         HWR.beamline.queue_manager.stop()
         return Response(status=200)
 
@@ -66,6 +73,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
                 200: On success
                 409: Queue could not be paused
         """
+        _queue_log.info("[QUEUE] user=%s action=pause", current_user.username)
         msg = app.queue.queue_pause()
         server.emit("queue", msg, namespace="/hwr")
         return Response(status=200)
@@ -80,6 +88,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
                 200: On success
                 409: Queue could not be unpause
         """
+        _queue_log.info("[QUEUE] user=%s action=unpause", current_user.username)
         msg = app.queue.queue_unpause()
         server.emit("queue", msg, namespace="/hwr")
         return Response(status=200)
@@ -94,6 +103,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
                 200: On success
                 409: Queue could not be started
         """
+        _queue_log.info("[QUEUE] user=%s action=clear", current_user.username)
         app.queue.queue_clear()
         return Response(status=200)
 
@@ -160,6 +170,11 @@ def init_route(app, server, url_prefix):  # noqa: C901
     def queue_add_item():
         tasks = request.get_json()
 
+        _queue_log.info(
+            "[QUEUE] user=%s action=add_item count=%s",
+            current_user.username,
+            len(tasks) if isinstance(tasks, list) else 1,
+        )
         queue = app.queue.queue_add_item(tasks)
         sample_list = app.lims.sample_list_get(current_queue=queue)
 
@@ -200,6 +215,11 @@ def init_route(app, server, url_prefix):  # noqa: C901
     def queue_delete_item():
         item_pos_list = request.get_json()
 
+        _queue_log.info(
+            "[QUEUE] user=%s action=delete_item positions=%s",
+            current_user.username,
+            item_pos_list,
+        )
         app.queue.delete_entry_at(item_pos_list)
         server.emit(
             "queue", {"Signal": "update", "message": "observers"}, namespace="/hwr"

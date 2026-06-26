@@ -1,0 +1,12 @@
+---
+# SECRETS — 
+
+# MXCubeWeb Flask
+vault_mxcube_secret_key: "01c8fe151a3b305355c110d0bf3c806c2af387508183f852d235e216706cb240"
+vault_mxcube_security_password_salt: "146776c628bf6def319739251ec68c080e0f87433a406a19a26058f9878cb1ce"
+
+# SSO Keycloak client secret
+vault_mxcube_sso_client_secret: "DoCKb0rnxbDZX3YrueQp2yr9nd0Qdcbn"
+
+# MongoDB pour ICAT+
+vault_icat_mongo_password: "&?GaS4o8B@atg6qpFMT&SAaY"

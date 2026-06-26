@@ -1,0 +1,8 @@
+# Docker environment
+
+ICAT_PLUS_PORT={{ icat_config.port }}
+ICAT_SERVER_URL=http://{{ ansible_fqdn }}
+ICAT_SERVER_PORT={{ icat_config.server_port }}
+
+MONGO_USER={{ icat_config.mongo_user }}
+MONGO_PASSWORD={{ icat_config.mongo_password }}

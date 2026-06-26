@@ -31,6 +31,14 @@
         mode: '0755'
       tags: [setup, directories]
 
+    - name: Create log directory
+      ansible.builtin.file:
+        path: "{{ log_base_path }}"
+        state: directory
+        owner: "{{ service_user }}"
+        mode: '0750'
+      tags: [setup, directories, logging]
+
     # Miniconda setup
     - name: Check if Miniconda is installed
       ansible.builtin.stat:
@@ -110,6 +118,8 @@
           - "--exclude=.git"
           - "--exclude=__pycache__"
           - "--exclude=*.pyc"
+          - "--exclude=.venv"
+          - "--no-group"
       become_user: "{{ service_user }}"
       when: use_local_repos
       tags: [repositories, mxcubecore, local, update]
@@ -126,6 +136,8 @@
           - "--exclude=*.pyc"
           - "--exclude=node_modules"
           - "--exclude=ui/build"
+          - "--exclude=.venv"
+          - "--no-group"
       become_user: "{{ service_user }}"
       when: use_local_repos
       tags: [repositories, mxcubeweb, local, update]
@@ -140,6 +152,8 @@
           - "--exclude=.git"
           - "--exclude=__pycache__"
           - "--exclude=*.pyc"
+          - "--exclude=.venv"
+          - "--no-group"
       become_user: "{{ service_user }}"
       when: use_local_repos
       tags: [repositories, bliss, local, update]

@@ -270,7 +270,7 @@ class MXCUBEApplication:
                 p.touch(mode=0o600, exist_ok=True)
                 p.chmod(0o600)
                 handler = TimedRotatingFileHandler(
-                    item["path"], when="midnight", backupCount=7
+                    item["path"], when="midnight", backupCount=14
                 )
                 handler.setFormatter(file_fmt)
                 item["handler"] = handler
