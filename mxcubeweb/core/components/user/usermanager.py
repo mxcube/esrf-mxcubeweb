@@ -193,7 +193,7 @@ class BaseUserManager(ComponentBase):
                         )  # The username is the proposal
                     elif _u.selected_proposal is not None:
                         self.app.lims.select_session(_u.selected_proposal, _u.username)
-                        HWR.beamline.lims._active_user = _u.username
+                        HWR.beamline.lims.set_active_user(_u.username)
 
     def is_inhouse_user(self, user_id: str) -> bool:
         """Check if the ``user_id`` is in the in-house user list.
@@ -572,7 +572,7 @@ class UserManager(BaseUserManager):
         sso_data = sso_data or {}
 
         if self.app.CONFIG.sso.LOGOUT_URI:
-            if not current_user.is_anonymous:
+            if not current_user.is_anonymous and not current_user.in_control:
                 HWR.beamline.lims.remove_user(current_user.username)
                 refresh_token = current_user.refresh_token
             else:
