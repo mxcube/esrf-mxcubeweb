@@ -572,8 +572,10 @@ class UserManager(BaseUserManager):
         sso_data = sso_data or {}
 
         if self.app.CONFIG.sso.LOGOUT_URI:
-            if not current_user.is_anonymous and not current_user.in_control:
-                HWR.beamline.lims.remove_user(current_user.username)
+            if not current_user.is_anonymous:
+                if not current_user.in_control:
+                    HWR.beamline.lims.remove_user(current_user.username)
+
                 refresh_token = current_user.refresh_token
             else:
                 refresh_token = sso_data.get("refresh_token", None)
