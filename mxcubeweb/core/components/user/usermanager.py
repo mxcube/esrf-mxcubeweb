@@ -55,8 +55,21 @@ class BaseUserManager(ComponentBase):
             },
         )
 
+        self.signout_all_users()
+
     def handle_sessions_changed(self, sessions):
         self.app.server.emit("sessionsChanged", namespace="/hwr")
+
+    def signout_all_users(self):
+        """Sign out all users.
+        """
+        for user in User.query.all():
+            self.app.server.emit("forceSignout", room=user.socketio_session_id, namespace="/hwr")
+            self.app.server.user_datastore.delete_user(user)
+            
+
+        self.app.server.user_datastore.commit()
+        logging.getLogger("MX3.HWR").info("Logged out all users on server startup")
 
     def get_observers(self) -> list[User]:
         """List users that are in observer mode.
@@ -123,6 +136,7 @@ class BaseUserManager(ComponentBase):
         for _u in User.query.all():
             if _u.username == username:
                 self.db_set_in_control(_u, True)
+                HWR.beamline.lims.set_active_user(_u.username)
                 user = _u
             else:
                 self.db_set_in_control(_u, False)
@@ -144,6 +158,10 @@ class BaseUserManager(ComponentBase):
             ):
                 logging.getLogger("MX3.HWR").info(
                     "Logged out inactive user %s", _u.username
+                )
+
+                self.app.server.emit(
+                    "forceSignout", room=_u.socketio_session_id, namespace="/hwr"
                 )
                 self.app.server.user_datastore.delete_user(_u)
                 self.app.server.user_datastore.commit()
@@ -181,19 +199,6 @@ class BaseUserManager(ComponentBase):
             # in control
             if not active_in_control:
                 self.db_set_in_control(current_user, True)
-
-            # Set active proposal to that of the active user
-            for _u in User.query.all():
-                if _u.is_authenticated and _u.in_control:
-                    if not HWR.beamline.lims.is_user_login_type():
-                        # In principle there is no need for doing so..
-                        self.app.lims.select_session(
-                            self.app.lims.get_session_manager().active_session.proposal_name,
-                            self.app.lims.get_session_manager().active_session.proposal_name
-                        )  # The username is the proposal
-                    elif _u.selected_proposal is not None:
-                        self.app.lims.select_session(_u.selected_proposal, _u.username)
-                        HWR.beamline.lims.set_active_user(_u.username)
 
     def is_inhouse_user(self, user_id: str) -> bool:
         """Check if the ``user_id`` is in the in-house user list.
@@ -339,13 +344,6 @@ class BaseUserManager(ComponentBase):
         Returns:
             Dictionary with login information.
         """
-        # update_operator will update the login status of current_user, and make
-        # sure that the is_anonymous has the correct value.
-        # Update operator calls lims.select_session that raises an exception if
-        # there are no valid LIMS sessions.
-        with contextlib.suppress(Exception):
-            self.update_operator()
-
         login_type = "User" if HWR.beamline.lims.is_user_login_type() else "Proposal"
 
         if current_user.is_anonymous:
