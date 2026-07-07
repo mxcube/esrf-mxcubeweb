@@ -96,6 +96,7 @@ def init_route(app, server, url_prefix):  # noqa: C901
         newop.requests_control = False
         newop.requests_control_msg = None
         app.usermanager.update_user(newop)
+        app.usermanager.update_operator()
 
         if oldop:
             server.emit("userChanged", room=oldop.socketio_session_id, namespace="/hwr")

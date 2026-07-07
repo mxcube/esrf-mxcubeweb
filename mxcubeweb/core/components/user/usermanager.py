@@ -55,8 +55,21 @@ class BaseUserManager(ComponentBase):
             },
         )
 
+        self.signout_all_users()
+
     def handle_sessions_changed(self, sessions):
         self.app.server.emit("sessionsChanged", namespace="/hwr")
+
+    def signout_all_users(self):
+        """Sign out all users.
+        """
+        for user in User.query.all():
+            self.app.server.emit("forceSignout", room=user.socketio_session_id, namespace="/hwr")
+            self.app.server.user_datastore.delete_user(user)
+            
+
+        self.app.server.user_datastore.commit()
+        logging.getLogger("MX3.HWR").info("Logged out all users on server startup")
 
     def get_observers(self) -> list[User]:
         """List users that are in observer mode.
@@ -310,6 +323,7 @@ class BaseUserManager(ComponentBase):
         flask_security.logout_user()
 
         self.app.server.emit("observersChanged", namespace="/hwr")
+        self.update_operator()
 
     def force_signout_user(self, username: str) -> None:
         """Force signout of the anonymous or non operating user.
@@ -325,6 +339,7 @@ class BaseUserManager(ComponentBase):
             self.app.server.user_datastore.delete_user(user)
             self.app.server.user_datastore.commit()
             self.app.server.emit("forceSignout", room=socketio_sid, namespace="/hwr")
+            self.update_operator()
 
     def login_info(self) -> dict:
         """Get the login information to be displayed in the application.
@@ -339,12 +354,12 @@ class BaseUserManager(ComponentBase):
         Returns:
             Dictionary with login information.
         """
-        # update_operator will update the login status of current_user, and make
-        # sure that the is_anonymous has the correct value.
-        # Update operator calls lims.select_session that raises an exception if
-        # there are no valid LIMS sessions.
-        with contextlib.suppress(Exception):
-            self.update_operator()
+        # # update_operator will update the login status of current_user, and make
+        # # sure that the is_anonymous has the correct value.
+        # # Update operator calls lims.select_session that raises an exception if
+        # # there are no valid LIMS sessions.
+        # with contextlib.suppress(Exception):
+        #     self.update_operator()
 
         login_type = "User" if HWR.beamline.lims.is_user_login_type() else "Proposal"
 
