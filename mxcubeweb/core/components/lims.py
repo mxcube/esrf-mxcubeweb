@@ -95,6 +95,7 @@ class Lims(ComponentBase):
         # proposal_number is the session identifier
         self.select_session(proposal_number, current_user.username)
         self.app.usermanager.update_active_users()
+        self.app.server.emit("sessionsChanged", namespace="/hwr")
         return {}
 
     def get_proposal(self):
