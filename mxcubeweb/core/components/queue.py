@@ -14,7 +14,7 @@ from mxcubecore.model import queue_model_enumerables as qme
 from mxcubecore.model import queue_model_objects as qmo
 from mxcubecore.model.queue_model_enumerables import CENTRING_METHOD
 from mxcubecore.queue_entry.base_queue_entry import QUEUE_ENTRY_STATUS
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
 from mxcubeweb.core.components.component_base import ComponentBase
 from mxcubeweb.core.models.adaptermodels import (
@@ -952,7 +952,13 @@ class QueueSerializer:
 
         Each item (dictionary) describes either a sample or a task.
         """
-        parsed_items = [SampleNode.model_validate(i) for i in item_list]
+        try:
+            parsed_items = [SampleNode.model_validate(i) for i in item_list]
+        except ValidationError:
+            logging.getLogger("MX3.QUEUE").exception(
+                "Failed to validate queue item(s): %s" % item_list
+            )
+            raise
         for item in parsed_items:
             self._queue_add_item_rec(None, item)
 
