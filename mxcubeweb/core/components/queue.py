@@ -482,6 +482,7 @@ TaskNodeUnion = (
 
 class SampleNode(QueueNodeModel):
     sampleID: str  # noqa: N815
+    limsID: int | None = None  # noqa: N815
     code: str | None = None
     location: str
     cell_no: int = 0
@@ -544,6 +545,7 @@ class QueueSerializer:
         """Builds the SampleNode representation of the Sample model <n>."""
         return SampleNode(
             sampleID=n.loc_str,
+            limsID=n.lims_id if n.lims_id != -1 else None,
             queueID=n._node_id,
             code=n.code,
             type="Sample",
