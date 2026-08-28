@@ -1,4 +1,5 @@
 import contextlib
+import copy
 import itertools
 import logging
 import os
@@ -157,6 +158,9 @@ class TaskDataPathModel(BaseModel):
 
     model_config = {
         "validate_assignment": True,
+        # Internal serialization (_handle_dc_node, _handle_char_node, ...)
+        # feeds the full mxcubecore object dict into this model's subclasses,
+        # which only model a subset of it - "ignore" lets that pass through.
         "extra": "ignore",
         "str_strip_whitespace": True,
         "use_enum_values": True,
@@ -389,6 +393,8 @@ class CharacterisationParameters(DataCollectionParameters):
 
 
 class QueueNodeModel(BaseModel):
+    model_config = {"extra": "forbid"}
+
     type: str = ""
     queueID: int = -1  # noqa: N815
     checked: bool = False
@@ -452,23 +458,23 @@ def build_task_node_model(value: object):
         # original type afterwards so downstream routing (add_interleaved,
         # the interleave swap logic) still recognizes it as "Interleaved".
         normalized["type"] = "DataCollection"
-        model = DataCollectionNodeModel.model_validate(normalized)
+        model = validate_model_tolerant(DataCollectionNodeModel, normalized)
         model.type = "Interleaved"
         return model
 
     if task_type == "Characterisation":
-        return CharacterisationNodeModel.model_validate(normalized)
+        return validate_model_tolerant(CharacterisationNodeModel, normalized)
 
     if task_type == "xrf_spectrum":
-        return XRFNodeModel.model_validate(normalized)
+        return validate_model_tolerant(XRFNodeModel, normalized)
 
     if task_type == "energy_scan":
-        return EnergyScanNodeModel.model_validate(normalized)
+        return validate_model_tolerant(EnergyScanNodeModel, normalized)
 
     if task_type in {"Workflow", "GphlWorkflow"}:
-        return WorkflowNodeModel.model_validate(normalized)
+        return validate_model_tolerant(WorkflowNodeModel, normalized)
 
-    return DataCollectionNodeModel.model_validate(normalized)
+    return validate_model_tolerant(DataCollectionNodeModel, normalized)
 
 
 TaskNodeUnion = (
@@ -478,6 +484,39 @@ TaskNodeUnion = (
     | EnergyScanNodeModel
     | WorkflowNodeModel
 )
+
+
+def validate_model_tolerant(model_cls, data):
+    """Validate <data> against <model_cls>, tolerating unknown fields.
+
+    Unknown/extra fields (model_config extra="forbid") are logged as a
+    warning and dropped rather than failing the request; any other
+    validation error (missing or invalid field) is re-raised as-is.
+    """
+    try:
+        return model_cls.model_validate(data)
+    except ValidationError as exc:
+        errors = exc.errors()
+        extra_errors = [e for e in errors if e["type"] == "extra_forbidden"]
+
+        if len(extra_errors) != len(errors):
+            raise
+
+        cleaned = copy.deepcopy(data)
+        for error in extra_errors:
+            *path, key = error["loc"]
+            target = cleaned
+            for part in path:
+                target = target[part]
+            target.pop(key, None)
+            logging.getLogger("MX3.QUEUE").warning(
+                "Ignoring unexpected field %r not defined on %s (path: %s)",
+                key,
+                model_cls.__name__,
+                ".".join(str(p) for p in error["loc"]),
+            )
+
+        return model_cls.model_validate(cleaned)
 
 
 class SampleNode(QueueNodeModel):
@@ -967,7 +1006,9 @@ class QueueSerializer:
         Each item (dictionary) describes either a sample or a task.
         """
         try:
-            parsed_items = [SampleNode.model_validate(i) for i in item_list]
+            parsed_items = [
+                validate_model_tolerant(SampleNode, i) for i in item_list
+            ]
         except ValidationError:
             logging.getLogger("MX3.QUEUE").exception(
                 "Failed to validate queue item(s): %s" % item_list
