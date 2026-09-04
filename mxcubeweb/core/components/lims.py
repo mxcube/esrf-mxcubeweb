@@ -12,6 +12,8 @@ from mxcubeweb.core.components.queue import (
     COLLECTED,
     UNCOLLECTED,
 )
+from mxcubeweb.core.components.queue import SampleNode, validate_model_tolerant
+
 from mxcubeweb.core.models.configmodels import ResourceHandlerConfigModel
 
 VALID_SAMPLE_NAME_REGEXP = re.compile("^[a-zA-Z0-9:+_-]+$")
@@ -125,6 +127,9 @@ class Lims(ComponentBase):
 
         if loc:
             res = self.app.SAMPLE_LIST.get("sampleList").get(loc, {})
+
+        for key, sample_dict in res["sampleList"].items():
+            res["sampleList"][key] = validate_model_tolerant(SampleNode, sample_dict).model_dump()
 
         return res
 
