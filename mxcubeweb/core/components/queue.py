@@ -531,6 +531,16 @@ class SampleNode(QueueNodeModel):
     defaultPrefix: str | None = ""  # noqa: N815
     defaultSubDir: str | None = ""  # noqa: N815
     tasks: list[TaskNodeUnion]
+    crystalUUID: str | None = None
+    image_url: str = ""
+    image_x: str | None = None
+    image_y: str | None = None
+    loadable: bool = True
+    puck_barcode: str | None = None
+    puck_type: str | None = None
+    sample_barcode: str = ""
+    sc_state: str = ""
+    state: int | None = None
 
     @model_validator(mode="before")
     @classmethod
