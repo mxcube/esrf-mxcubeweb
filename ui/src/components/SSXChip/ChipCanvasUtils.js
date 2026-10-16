@@ -18,8 +18,8 @@ export function renderChip(
     new Rect({
       top: 0,
       left: 0,
-      width: chipSizeX,
-      height: chipSizeY,
+      width: chipSizeX * 2,
+      height: chipSizeY * 2,
       selectable: false,
       hasControls: false,
       borderColor: '#fff',
@@ -37,7 +37,6 @@ export function renderChip(
   ];
 
   // Add labels
-
   for (let ci = 0; ci < cols; ci++) {
     let label = (ci + 1).toString();
 

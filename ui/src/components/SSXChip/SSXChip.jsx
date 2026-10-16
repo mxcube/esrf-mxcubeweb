@@ -150,7 +150,17 @@ export default function SSXChip() {
   }
 
   useEffect(() => {
-    initCanvas();
+    const canvas = initCanvas();
+
+    return () => {
+      if (Array.isArray(canvas)) {
+        canvas.forEach((object) => {
+          object?.dispose();
+        });
+      } else {
+        canvas?.dispose();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chipState]);
 
