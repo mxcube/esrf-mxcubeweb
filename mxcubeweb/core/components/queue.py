@@ -908,9 +908,12 @@ class Queue(ComponentBase):
         except AttributeError:
             ui_schema = json.dumps({})
 
-        for parameter_name, parameter_data in schema.get("properties", {}).items():
-            if "default" in parameter_data:
-                acq_parameters[parameter_name] = parameter_data["default"]
+        for parameter_group in schema.values():
+            for parameter_name, parameter_data in parameter_group.get(
+                "properties", {}
+            ).items():
+                if "default" in parameter_data:
+                    acq_parameters[parameter_name] = parameter_data["default"]
 
         return {
             "acq_parameters": {
@@ -941,58 +944,24 @@ class Queue(ComponentBase):
         }
 
     def get_task_schema(self, data_model):
-        """Return one flat JSON Schema for the parameters queue_add_item
-        actually expects for this task.
+        """Return the JSON Schema of each parameter group of the task,
+        keyed by the group (model field) name.
 
         :param data_model: a queue entry's DATA_MODEL - a pydantic model
             with exactly those five fields.
         """
-        nested_schema = data_model.model_json_schema()
-        defs = nested_schema.get("$defs", {})
-        resolved_def_keys = set()
-
-        def sub_schema(field_name):
-            field_schema = nested_schema["properties"][field_name]
-            ref = field_schema.get("$ref")
-            if ref:
-                key = ref.rsplit("/", 1)[-1]
-                resolved_def_keys.add(key)
-                return defs[key]
-            return field_schema
-
-        properties = {}
-        required = set()
-
-        for field_name in (
-            "path_parameters",
-            "common_parameters",
-            "collection_parameters",
-            "user_collection_parameters",
-            "legacy_parameters",
-        ):
-            sub = sub_schema(field_name)
-            required.update(sub.get("required", []))
-
-            for name, prop_schema in sub.get("properties", {}).items():
-                if name not in properties:
-                    properties[name] = prop_schema
-                elif properties[name] != prop_schema:
-                    combined = properties[name].get("allOf", [properties[name]])
-                    if prop_schema not in combined:
-                        combined = [*combined, prop_schema]
-                    properties[name] = {"allOf": combined}
-
-        schema = {
-            "type": "object",
-            "properties": properties,
-            "required": sorted(required),
+        return {
+            field_name: data_model.model_fields[
+                field_name
+            ].annotation.model_json_schema()
+            for field_name in (
+                "path_parameters",
+                "common_parameters",
+                "collection_parameters",
+                "user_collection_parameters",
+                "legacy_parameters",
+            )
         }
-
-        remaining_defs = {k: v for k, v in defs.items() if k not in resolved_def_keys}
-        if remaining_defs:
-            schema["$defs"] = remaining_defs
-
-        return schema
 
     def get_available_tasks(self):
         task_info = {}

@@ -395,20 +395,24 @@ def test_get_default_char_acq_params(client):
     assert actual == default_char_acq_params
 
 
-def test_get_task_schema_is_flat_and_matches_add_item_payload(client):
-    """get_task_schema must describe one flat dict (what queue_add_item
-    actually expects), not data_model's own 5-sub-model nested shape
+def test_get_task_schema_is_keyed_by_parameter_group(client):
+    """get_task_schema returns one schema per parameter group of the
+    data_model, keyed by the group name (the UI reads e.g.
+    schema.user_collection_parameters)
     """
     from mxcubecore.queue_entry.test_collection import TestCollectionTaskParameters
 
     schema = mxcube.queue.get_task_schema(TestCollectionTaskParameters)
 
-    assert schema["type"] == "object"
-    assert "path_parameters" not in schema["properties"]
-    for flat_field in ("prefix", "subdir", "exp_time", "cell_a", "offset"):
-        assert flat_field in schema["properties"]
-
-    assert "allOf" in schema["properties"]["num_images"]
+    assert list(schema) == [
+        "path_parameters",
+        "common_parameters",
+        "collection_parameters",
+        "user_collection_parameters",
+        "legacy_parameters",
+    ]
+    assert "prefix" in schema["path_parameters"]["properties"]
+    assert "exp_time" in schema["user_collection_parameters"]["properties"]
 
 
 def test_get_default_xrf_parameters(client):
