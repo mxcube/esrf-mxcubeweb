@@ -12,3 +12,4 @@ modules:
   beamline_setup: ui-modules/beamline_setup.yaml
   camera_setup: ui-modules/camera_setup.yaml
   session_picker: ui-modules/session_picker.yaml
+  data_collection: ui-modules/data_collection.yaml

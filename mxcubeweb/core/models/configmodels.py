@@ -201,6 +201,25 @@ class UIEquipmentModel(BaseModel):
     show_for_staff_only: bool = False
 
 
+class UIDataCollectionModel(BaseModel):
+    id: Literal["data_collection"] = "data_collection"
+    show_total_osc_range: bool = Field(
+        False,
+        description=(
+            "Show the total oscillation range field, keeping the total range "
+            "constant (by adjusting the number of images) when the oscillation "
+            "range changes"
+        ),
+    )
+    show_total_exposure: bool = Field(
+        False, description="Show the (read-only) total exposure time field"
+    )
+    total_exposure_warning_threshold: float = Field(
+        10.0,
+        description="Total exposure (s) above which the total exposure is highlighted",
+    )
+
+
 class UIPropertiesListModel(BaseModel):
     equipment: UIEquipmentModel = UIEquipmentModel()
     sample_view: UIPropertiesModel | None = None
@@ -210,6 +229,7 @@ class UIPropertiesListModel(BaseModel):
     sample_list_view_modes: UISampleListViewModesModel = UISampleListViewModesModel()
     sample_view_video_controls: UISampleViewVideoControlsModel | None = None
     session_picker: UISessionPickerModel = UISessionPickerModel()
+    data_collection: UIDataCollectionModel = UIDataCollectionModel()
 
 
 class UserManagerUserConfigModel(BaseModel):

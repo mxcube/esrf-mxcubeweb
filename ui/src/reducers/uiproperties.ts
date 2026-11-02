@@ -63,12 +63,20 @@ export interface UIEquipment {
   show_for_staff_only: boolean;
 }
 
+export interface UIDataCollection {
+  id: 'data_collection';
+  show_total_osc_range: boolean;
+  show_total_exposure: boolean;
+  total_exposure_warning_threshold: number;
+}
+
 export interface UIProperties {
   equipment: UIEquipment;
   beamline_setup: UISection;
   sample_view_motors: UISection;
   sample_list_view_modes: UISampleListViewModes;
   session_picker: UISessionPicker;
+  data_collection?: UIDataCollection;
   sample_view?: UISection;
   camera_setup?: { id: string; components: UICameraComponent[] };
   sample_view_video_controls?: {

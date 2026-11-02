@@ -44,45 +44,62 @@ class DataCollection extends React.Component {
     const oscRange = parseFloat(this.props.osc_range) || 0;
     const numImages = parseFloat(this.props.num_images) || 0;
     const calculatedTotal = oscRange * numImages;
-    
+
     if (calculatedTotal > 0) {
       this.setState({ targetTotalRange: calculatedTotal });
     }
   }
 
   componentDidUpdate(prevProps) {
+    // Only keep the total range constant when the feature is enabled,
+    // otherwise num_images would be changed behind the user's back
+    if (!this.props.dataCollectionUI.show_total_osc_range) {
+      return;
+    }
+
     const currentOscRange = parseFloat(this.props.osc_range);
     const prevOscRange = parseFloat(prevProps.osc_range);
     const currentNumImages = parseFloat(this.props.num_images);
     const prevNumImages = parseFloat(prevProps.num_images);
-    
+
     // Initialize targetTotalRange if it's not set yet and we now have valid values
-    if ((this.state.targetTotalRange === null || this.state.targetTotalRange === 0) &&
-        !isNaN(currentOscRange) && currentOscRange > 0 &&
-        !isNaN(currentNumImages) && currentNumImages > 0) {
+    if (
+      (this.state.targetTotalRange === null ||
+        this.state.targetTotalRange === 0) &&
+      !isNaN(currentOscRange) &&
+      currentOscRange > 0 &&
+      !isNaN(currentNumImages) &&
+      currentNumImages > 0
+    ) {
       this.setState({ targetTotalRange: currentOscRange * currentNumImages });
       return;
     }
-    
+
     // If osc_range changes, keep total range constant by updating num_images
-    if (!isNaN(currentOscRange) && 
-        !isNaN(prevOscRange) && 
-        currentOscRange !== prevOscRange && 
-        currentOscRange !== 0) {
-      
-      const targetTotal = this.state.targetTotalRange || (prevOscRange * prevNumImages);
-      
+    if (
+      !isNaN(currentOscRange) &&
+      !isNaN(prevOscRange) &&
+      currentOscRange !== prevOscRange &&
+      currentOscRange !== 0
+    ) {
+      const targetTotal =
+        this.state.targetTotalRange || prevOscRange * prevNumImages;
+
       if (targetTotal > 0) {
         const newNumImages = Math.round(targetTotal / currentOscRange);
-        this.props.dispatch(change('datacollection', 'num_images', newNumImages));
+        this.props.dispatch(
+          change('datacollection', 'num_images', newNumImages),
+        );
         // Keep the target total range the same
       }
     }
     // If num_images changes (but osc_range didn't), update target total range
-    else if (!isNaN(currentNumImages) && 
-             !isNaN(prevNumImages) && 
-             currentNumImages !== prevNumImages &&
-             currentOscRange === prevOscRange) {
+    else if (
+      !isNaN(currentNumImages) &&
+      !isNaN(prevNumImages) &&
+      currentNumImages !== prevNumImages &&
+      currentOscRange === prevOscRange
+    ) {
       const newTotalRange = currentOscRange * currentNumImages;
       this.setState({ targetTotalRange: newTotalRange });
     }
@@ -133,7 +150,7 @@ class DataCollection extends React.Component {
   handleTotalRangeChange(event) {
     const totalRange = parseFloat(event.target.value);
     const oscRange = parseFloat(this.props.osc_range) || 1;
-    
+
     if (!isNaN(totalRange) && oscRange !== 0) {
       const numImages = Math.round(totalRange / oscRange);
       this.setState({ targetTotalRange: totalRange });
@@ -239,17 +256,28 @@ class DataCollection extends React.Component {
     // Get current values
     const oscRange = parseFloat(this.props.osc_range) || 0;
     const numImages = parseFloat(this.props.num_images) || 0;
-    
+
     // Calculate total range from state (preserved value) or from current values
     // Use stored target if it exists and is > 0, otherwise calculate from current values
-    const totalRange = (this.state.targetTotalRange !== null && this.state.targetTotalRange > 0)
-      ? this.state.targetTotalRange 
-      : (oscRange * numImages);
+    const totalRange =
+      this.state.targetTotalRange !== null && this.state.targetTotalRange > 0
+        ? this.state.targetTotalRange
+        : oscRange * numImages;
 
     // Calculate total exposure
     const expTime = parseFloat(this.props.exp_time) || 0;
     const transmission = parseFloat(this.props.transmission) || 100;
-    const totalExposure = (expTime * numImages * transmission / 100).toFixed(2);
+    const totalExposure = ((expTime * numImages * transmission) / 100).toFixed(
+      2,
+    );
+
+    const {
+      show_total_osc_range,
+      show_total_exposure,
+      total_exposure_warning_threshold,
+    } = this.props.dataCollectionUI;
+    const totalExposureWarning =
+      parseFloat(totalExposure) > total_exposure_warning_threshold;
 
     return (
       <DraggableModal show={this.props.show} onHide={this.props.hide}>
@@ -319,21 +347,23 @@ class DataCollection extends React.Component {
                 label="Number of images"
               />
             </FieldsRow>
-            <FieldsRow>
-              <Form.Group as={Row} className="mb-3">
-                <Form.Label column sm="6">
-                  Total Range (degrees)
-                </Form.Label>
-                <Col sm="4">
-                  <Form.Control
-                    type="number"
-                    value={totalRange}
-                    onChange={this.handleTotalRangeChange}
-                    step="any"
-                  />
-                </Col>
-              </Form.Group>
-            </FieldsRow>
+            {show_total_osc_range && (
+              <FieldsRow>
+                <Form.Group as={Row} className="mb-3">
+                  <Form.Label column sm="6">
+                    Total Range (degrees)
+                  </Form.Label>
+                  <Col sm="4">
+                    <Form.Control
+                      type="number"
+                      value={totalRange}
+                      onChange={this.handleTotalRangeChange}
+                      step="any"
+                    />
+                  </Col>
+                </Form.Group>
+              </FieldsRow>
+            )}
             <FieldsRow>
               <InputField
                 propName="exp_time"
@@ -349,25 +379,27 @@ class DataCollection extends React.Component {
                 label="Transmission"
               />
             </FieldsRow>
-            <FieldsRow>
-              <Form.Group as={Row} className="mb-3">
-                <Form.Label column sm="6">
-                  Total Exposure (s)
-                </Form.Label>
-                <Col sm="4">
-                  <Form.Control
-                    type="text"
-                    value={totalExposure}
-                    disabled
-                    readOnly
-                    style={{
-                      color: parseFloat(totalExposure) > 10 ? 'red' : 'inherit',
-                      fontWeight: parseFloat(totalExposure) > 10 ? 'bold' : 'normal'
-                    }}
-                  />
-                </Col>
-              </Form.Group>
-            </FieldsRow>
+            {show_total_exposure && (
+              <FieldsRow>
+                <Form.Group as={Row} className="mb-3">
+                  <Form.Label column sm="6">
+                    Total Exposure (s)
+                  </Form.Label>
+                  <Col sm="4">
+                    <Form.Control
+                      type="text"
+                      value={totalExposure}
+                      disabled
+                      readOnly
+                      style={{
+                        color: totalExposureWarning ? 'red' : 'inherit',
+                        fontWeight: totalExposureWarning ? 'bold' : 'normal',
+                      }}
+                    />
+                  </Col>
+                </Form.Group>
+              </FieldsRow>
+            )}
             <FieldsRow>
               <InputField
                 disabled={this.props.beamline.hardwareObjects.energy.readonly}
@@ -542,6 +574,12 @@ export default connect((state) => {
     num_images,
     exp_time,
     transmission,
+    dataCollectionUI: {
+      show_total_osc_range: false,
+      show_total_exposure: false,
+      total_exposure_warning_threshold: 10,
+      ...state.uiproperties.data_collection,
+    },
     initialValues: {
       ...parameters,
       beam_size: state.sampleview.currentAperture,
