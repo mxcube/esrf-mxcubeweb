@@ -12,6 +12,7 @@ from mxcubecore.queuelib import (
     SampleNode,
     validate_model_tolerant,
 )
+from pydantic import ValidationError
 
 from mxcubeweb.core.components.component_base import ComponentBase
 from mxcubeweb.core.models.configmodels import ResourceHandlerConfigModel
@@ -110,7 +111,35 @@ class Lims(ComponentBase):
     def init_sample_list(self):
         self.sample_list_set(self.new_sample_list())
 
+    def validated_sample(self, sample):
+        """Return <sample> validated against SampleNode.
+
+        Samples are validated when they are added to or updated in the sample
+        list, so that the sample list itself always contains valid samples.
+
+        :raises ValidationError: if <sample> is not valid
+        """
+        try:
+            return validate_model_tolerant(SampleNode, sample).model_dump()
+        except ValidationError:
+            logging.getLogger("MX3.HWR").exception(
+                "Invalid sample %s", sample.get("sampleID", sample)
+            )
+            raise
+
     def sample_list_set(self, sample_list):
+        # Validate all samples before changing anything, an invalid sample
+        # leaves the sample list unchanged
+        validated = {
+            loc: self.validated_sample(sample)
+            for loc, sample in sample_list["sampleList"].items()
+        }
+
+        for loc, sample in sample_list["sampleList"].items():
+            # Update in place, the same dict is referenced from SC_CONTENTS
+            sample.clear()
+            sample.update(validated[loc])
+
         self.app.SAMPLE_LIST = sample_list
 
     def sample_list_set_order(self, sample_order):
@@ -123,17 +152,11 @@ class Lims(ComponentBase):
             self.get_sample_list_from_sc()
 
         self.synch_sample_list_with_queue(current_queue)
-        res = self.app.SAMPLE_LIST
 
         if loc:
-            res = self.app.SAMPLE_LIST.get("sampleList").get(loc, {})
+            return self.app.SAMPLE_LIST["sampleList"].get(loc, {})
 
-        for key, sample_dict in res["sampleList"].items():
-            res["sampleList"][key] = validate_model_tolerant(
-                SampleNode, sample_dict
-            ).model_dump()
-
-        return res
+        return self.app.SAMPLE_LIST
 
     def sc_contents_add(self, sample):
         code, location = sample.get("code", None), sample.get("sampleID")
@@ -290,16 +313,33 @@ class Lims(ComponentBase):
                 model.loc_str = data.get("sampleID", -1)
                 model.free_pin_mode = data.get("location", "") == "Manual"
 
+                # The queue sample only carries the information the queue
+                # knows about, the rest (for instance LIMS information like
+                # containerCode) is empty and should not overwrite what is
+                # already set by sc or lims
+                sample = {
+                    key: value
+                    for key, value in sample.items()
+                    if value not in (None, "") or key not in data
+                }
+
                 self.sample_list_update_sample(loc, sample)
 
     def sample_list_update_sample(self, loc, sample):
         _sample = self.app.SAMPLE_LIST["sampleList"].get(loc, {})
 
+        # Validate the result of the update, <sample> may only contain the
+        # updated fields. An invalid update raises and leaves the sample list
+        # unchanged.
+        validated = self.validated_sample({**_sample, **sample})
+
         # If sample exists in sample list update it, otherwise add it
         if _sample:
-            _sample.update(sample)
+            # Update in place, the same dict is referenced from SC_CONTENTS
+            _sample.clear()
+            _sample.update(validated)
         else:
-            self.app.SAMPLE_LIST["sampleList"][loc] = sample
+            self.app.SAMPLE_LIST["sampleList"][loc] = validated
             self.app.SAMPLE_LIST["sampleOrder"].append(loc)
 
         return self.app.SAMPLE_LIST["sampleList"].get(loc, {})
