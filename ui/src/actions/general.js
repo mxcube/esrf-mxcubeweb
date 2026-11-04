@@ -45,7 +45,7 @@ export function displayImage(path, imgNum) {
       { path, img_num: imgNum },
     );
     if (data.image_url) {
-      window.open(data.image_url, 'braggy');
+      window.open(data.image_url, 'imageViewer');
     }
   };
 }

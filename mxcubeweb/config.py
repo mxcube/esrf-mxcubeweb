@@ -14,7 +14,6 @@ from ruamel.yaml.error import MarkedYAMLError
 from mxcubeweb.core.models.configmodels import (
     AppConfigModel,
     ArgusConfigModel,
-    BraggyConfigModel,
     FlaskConfigModel,
     MXCUBEAppConfigModel,
     SSOConfigModel,
@@ -204,7 +203,6 @@ class Config:
     app: MXCUBEAppConfigModel
     sso: SSOConfigModel
     argus: ArgusConfigModel
-    braggy: BraggyConfigModel
 
     def __init__(self, fpath):
         Config.CONFIG_ROOT_PATH = fpath
@@ -216,7 +214,6 @@ class Config:
         self.app.ui_properties = uiprop
         self.sso = app_config.sso
         self.argus = app_config.argus
-        self.braggy = app_config.braggy
 
     def load_config(self, component_name, schema):
         fpath = os.path.join(Config.CONFIG_ROOT_PATH, f"{component_name}.yaml")

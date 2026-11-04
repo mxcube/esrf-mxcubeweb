@@ -41,21 +41,20 @@ class DetectorAdapter(AdapterBase):
         return self._ho.get_state().name.upper()
 
     def display_image(self, params: DisplayImageParams) -> dict:
-        """Notify ADXV and/or Braggy of the image to display."""
+        """Notify ADXV of the image to display.
+
+        Returns the URL of the data portal viewer displaying the image, empty
+        if the LIMS does not provide one or the file is not (yet) registered.
+        """
         res = {"image_url": ""}
         path, img_num = str(params.path), params.img_num
 
         if path:
             fpath, img = HWR.beamline.detector.get_actual_file_path(path, img_num)
             HWR.beamline.collect.display_image(fpath, img)
-            fpath = HWR.beamline.session.get_path_with_proposal_as_root(fpath)
 
-            if self.app.CONFIG.braggy is not None and self.app.CONFIG.braggy.USE_BRAGGY:
-                res = {
-                    "image_url": (
-                        f"{self.app.CONFIG.braggy.BRAGGY_URL}/"
-                        f"?file={fpath}/image_${img_num}.h5.dataset"
-                    )
-                }
+            # Not all LIMS implementations provide a data file viewer
+            if hasattr(HWR.beamline.lims, "get_datafile_url"):
+                res["image_url"] = HWR.beamline.lims.get_datafile_url(fpath) or ""
 
         return res
