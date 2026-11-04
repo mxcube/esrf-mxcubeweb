@@ -206,6 +206,11 @@ class BaseUserManager(ComponentBase):
                 current_user.nickname = current_user.username
                 self.db_set_in_control(current_user, True)
 
+                # Make sure the LIMS acts on behalf of the new operator and
+                # not of a previous one that might have signed out
+                if hasattr(HWR.beamline.lims, "set_active_user"):
+                    HWR.beamline.lims.set_active_user(current_user.username)
+
     def is_inhouse_user(self, user_id: str) -> bool:
         """Check if the ``user_id`` is in the in-house user list.
 

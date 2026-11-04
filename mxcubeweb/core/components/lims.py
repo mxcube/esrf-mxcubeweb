@@ -47,7 +47,11 @@ class Lims(ComponentBase):
                         "attr": "set_proposal",
                         "method": "POST",
                         "url": "/proposal",
-                        "decorators": [app.server.restrict],
+                        # Only the user in control may change the active session
+                        "decorators": [
+                            app.server.require_control,
+                            app.server.restrict,
+                        ],
                     },
                     {
                         "attr": "get_proposal",
