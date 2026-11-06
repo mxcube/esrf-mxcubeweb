@@ -355,6 +355,29 @@ def test_queue_enable_item(client):
     assert json.loads(resp.data).get("1:05")["checked"] == False
 
 
+def test_disabled_sample_not_in_sample_order(client):
+    """A disabled (dequeued) sample stays in the queue, to keep its history,
+    but is not part of sample_order, which the UI uses as the samples to
+    collect."""
+    resp = client.get("/mxcube/api/v0.1/queue/")
+    queue_id = json.loads(resp.data).get("1:05")["queueID"]
+
+    for enabled in (False, True):
+        resp = client.post(
+            "/mxcube/api/v0.1/queue/set_enabled",
+            data=json.dumps({"qidList": [queue_id], "enabled": enabled}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+        queue = json.loads(client.get("/mxcube/api/v0.1/queue/").data)
+        assert queue["1:05"]["checked"] == enabled
+        assert ("1:05" in queue["sample_order"]) == enabled
+
+        resp = client.get("/mxcube/api/v0.1/queue/queue_state")
+        assert ("1:05" in json.loads(resp.data)["queue"]) == enabled
+
+
 def assert_and_remove_keys_with_random_value(parameters):
     assert "osc_start" in parameters["acq_parameters"]
     assert "energy" in parameters["acq_parameters"]
