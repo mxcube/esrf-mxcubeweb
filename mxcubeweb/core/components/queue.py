@@ -453,7 +453,9 @@ class Queue(ComponentBase):
                 "taskIndex": node["idx"],
                 "queueID": node["queue_id"],
                 "sample": node["sample"],
-                "state": RUNNING if progress < 1 else COLLECTED,
+                "state": self.collect_state(
+                    node["node"], RUNNING if progress < 1 else COLLECTED
+                ),
                 "progress": progress,
             }
             self.app.server.emit("task", msg, namespace="/hwr")
@@ -471,7 +473,7 @@ class Queue(ComponentBase):
                 "taskIndex": node["idx"],
                 "queueID": node["queue_id"],
                 "sample": node["sample"],
-                "state": COLLECTED,
+                "state": self.collect_state(node["node"], COLLECTED),
                 "progress": 1,
             }
 
@@ -489,7 +491,7 @@ class Queue(ComponentBase):
         node = self.last_queue_node()
 
         if not self.is_interleaved(node["node"]):
-            state = COLLECTED if success else WARNING
+            state = self.collect_state(node["node"], COLLECTED if success else WARNING)
 
             msg = {
                 "Signal": "collectOscillationFinished",
@@ -614,6 +616,10 @@ class Queue(ComponentBase):
 
         self.queue_toggle_sample(entry)
 
+    def queue_entry_state_changed(self, entry):
+        if not self.is_interleaved(entry.get_data_model()):
+            self.app.server.emit("task", self.get_task_state(entry), namespace="/hwr")
+
     def queue_execution_finished(self, entry, queue_state=None):
         state = queue_state if queue_state else self.queue_exec_state()
         msg = {"Signal": state, "Message": "Queue execution stopped"}
@@ -705,6 +711,11 @@ class Queue(ComponentBase):
             self.queue_execution_entry_started,
         )
 
+        HWR.beamline.queue_manager.connect(
+            "queue_entry_state_changed",
+            self.queue_entry_state_changed,
+        )
+
         HWR.beamline.queue_manager.connect("collectEnded", self.collect_ended)
 
         HWR.beamline.queue_manager.connect(
@@ -781,6 +792,18 @@ class Queue(ComponentBase):
             and node.interleave_num_images is not None
             and node.interleave_num_images > 0
         )
+
+    def collect_state(self, node, state):
+        """Return the state to report for a collect signal on <node>.
+
+        The reference collection of a Characterisation reports through the
+        Characterisation node (see QueueManager.last_queue_node), which is
+        only collected once the characterisation itself has finished.
+        """
+        if state == COLLECTED and isinstance(node, qmo.Characterisation):
+            return RUNNING
+
+        return state
 
     def init_queue_settings(self):
         self.app.AUTO_MOUNT_SAMPLE = HWR.beamline.collect.get_property(
